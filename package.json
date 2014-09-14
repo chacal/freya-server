@@ -1,0 +1,8 @@
+{
+  "name": "tt_nmea_utils",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "baconjs": "~0.7.22"
+  }
+}
