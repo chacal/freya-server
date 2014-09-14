@@ -1,9 +1,12 @@
 var readline = require('readline');
 var Bacon = require("baconjs").Bacon;
+var calibration = require("./calibration.js");
 
 var AWA;
 var AWS;
 var BTS;
+
+calibration.initialize();
 
 var rl = readline.createInterface({ input: process.stdin, output: "/dev/null" });
 var nmeaMessages = Bacon.fromEventTarget(rl, "line").filter(function(line) { return line.match(/^\$.*\*/) });
@@ -23,6 +26,7 @@ boatSpeedMessages.onValue(function(line) {
   BTS = matches[1];
 });
 
-Bacon.interval(100).onValue(function() {
-  console.log("AWA: " + AWA + ", AWS: " + AWS + ", BTS: " + BTS)
+Bacon.interval(200).onValue(function() {
+  twsCorrection = calibration.calculateTwsCorrection(AWA, AWS, BTS);
+  console.log("AWA: " + AWA + ", AWS: " + AWS + ", BTS: " + BTS + ", Correction: " + twsCorrection)
 });
