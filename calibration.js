@@ -8,11 +8,11 @@ var NA_TABLE_VALUE = "-"
 
 ///// Public API /////
 
-exports.initialize = function() {
+exports.initialize = function(twsCorrectionTableFile) {
   var tableFromCsv = [];
 
   csv
-    .fromPath("tws_correction_table.csv", {comment: "#"} )
+    .fromPath(twsCorrectionTableFile, {comment: "#"} )
     .on("data", _.partial(insertToTable, tableFromCsv))
     .on("end", function () {
       twsCorrectionTable = interpolateTable(tableFromCsv)

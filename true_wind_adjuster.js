@@ -6,7 +6,7 @@ var AWA;
 var AWS;
 var BTS;
 
-calibration.initialize();
+calibration.initialize("tws_correction_table.csv");
 
 var rl = readline.createInterface({ input: process.stdin, output: "/dev/null" });
 var nmeaMessages = Bacon.fromEventTarget(rl, "line").filter(function(line) { return line.match(/^\$.*\*/) });
