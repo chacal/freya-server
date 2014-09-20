@@ -3,29 +3,36 @@ var _ = require("underscore");
 var Table = require('cli-table');
 
 var twsCorrectionTable = [];
+var twdCorrectionTable = [];
 var NA_TABLE_VALUE = "-"
 
 
 
 ///// Public API /////
 
-exports.initialize = function(twsCorrectionTableFile) {
-  var tableFromCsv = [];
+exports.initialize = function(twsCorrectionTableFile, twdCorrectionTableFile) {
+  readCorrectionTable(twsCorrectionTableFile, "TWS Correction Table", function(readTable) {
+    twsCorrectionTable = readTable
 
-  csv
-    .fromPath(twsCorrectionTableFile, {comment: "#"} )
-    .on("data", _.partial(insertToTable, tableFromCsv))
-    .on("end", function () {
-      twsCorrectionTable = interpolateTable(tableFromCsv)
-      printCorrectionTable(twsCorrectionTable)
-    });
-
-  function insertToTable(table, data) {
-    table.push(_.map(data, tryParseInt))
-  }
+    readCorrectionTable(twdCorrectionTableFile, "TWD Correction Table", function(readTable) {
+      twdCorrectionTable = readTable
+    })
+  })
 };
 
 exports.calculateTwsCorrection = function(awa, aws, bts) {
+  return readCalibrationFromTable(twsCorrectionTable, awa, aws, bts)
+};
+
+exports.calculateTwdCorrection = function(awa, aws, bts) {
+  return readCalibrationFromTable(twdCorrectionTable, awa, aws, bts)
+};
+
+
+
+///// Private API /////
+
+function readCalibrationFromTable(table, awa, aws, bts) {
   // Find table rows & columns for surrounding corners
   tableAwa1 = roundDownTo10(awa)
   tableAwa2 = roundUpTo10(awa)
@@ -33,18 +40,35 @@ exports.calculateTwsCorrection = function(awa, aws, bts) {
   tableBts2 = Math.ceil(bts)
 
   // Surrounding corner table values
-  x1y1 = twsCorrectionTable[tableAwa1 / 10][tableBts1];  // divide AWA by 10 to get the correct row index
-  x1y2 = twsCorrectionTable[tableAwa2 / 10][tableBts1];
-  x2y1 = twsCorrectionTable[tableAwa1 / 10][tableBts2];
-  x2y2 = twsCorrectionTable[tableAwa2 / 10][tableBts2];
+  x1y1 = table[tableAwa1 / 10][tableBts1];  // divide AWA by 10 to get the correct row index
+  x1y2 = table[tableAwa2 / 10][tableBts1];
+  x2y1 = table[tableAwa1 / 10][tableBts2];
+  x2y2 = table[tableAwa2 / 10][tableBts2];
 
   // 2D interpolate between surrounding corner values
   return roundToPoint1(interpolate(x1y1, x2y1, x1y2, x2y2, bts, tableBts1, tableBts2, awa, tableAwa1, tableAwa2))
-};
+}
 
 
+function readCorrectionTable(file, tableTitle, readyCallback) {
+  var tableFromCsv = []
+  var interpolatedTable = []
 
-///// Private API /////
+  csv
+    .fromPath(file, {comment: "#"})
+    .on("data", _.partial(insertToTable, tableFromCsv))
+    .on("end", function () {
+      interpolatedTable = interpolateTable(tableFromCsv)
+      console.log("\n\n" + tableTitle + ":")
+      printCorrectionTable(interpolatedTable)
+      readyCallback(interpolatedTable)
+    });
+
+  function insertToTable(table, data) {
+    table.push(_.map(data, tryParseInt))
+  }
+}
+
 
 function interpolateTable(table) {
   interpolatedTable = copy2DArray(table)
@@ -113,9 +137,9 @@ function linearInterpolate(x, x1, x2, y1, y2) {
 
 function printCorrectionTable(correctionTable) {
   var outputTable = new Table({
-    head: ["", "0 kn", "1 kn", "2 kn", "3 kn", "4 kn", "5 kn", "6 kn", "7 kn", "8 kn"],
-    colWidths: [5, 6, 6, 6, 6, 6, 6, 6, 6, 6],
-    colAligns: ["left", "right", "right", "right", "right", "right", "right", "right", "right", "right"],
+    head: ["", "0 kts", "1 kts", "2 kts", "3 kts", "4 kts", "5 kts", "6 kts", "7 kts", "8 kts"],
+    colWidths: [5, 7, 7, 7, 7, 7, 7, 7, 7, 7],
+    colAligns: ["right", "right", "right", "right", "right", "right", "right", "right", "right", "right"],
     style: {compact: true}
   });
   for (var i = 0; i < correctionTable.length; i++) {

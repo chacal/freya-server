@@ -6,7 +6,7 @@ var AWA;
 var AWS;
 var BTS;
 
-calibration.initialize("tws_correction_table.csv");
+calibration.initialize("tws_correction_table.csv", "twd_correction_table.csv");
 
 var rl = readline.createInterface({ input: process.stdin, output: "/dev/null" });
 var nmeaMessages = Bacon.fromEventTarget(rl, "line").filter(function(line) { return line.match(/^\$.*\*/) });
@@ -28,5 +28,6 @@ boatSpeedMessages.onValue(function(line) {
 
 Bacon.interval(200).onValue(function() {
   twsCorrection = calibration.calculateTwsCorrection(AWA, AWS, BTS);
-  console.log("AWA: " + AWA + ", AWS: " + AWS + ", BTS: " + BTS + ", Correction: " + twsCorrection)
+  twdCorrection = calibration.calculateTwdCorrection(AWA, AWS, BTS);
+  console.log("AWA: " + AWA + ", AWS: " + AWS + ", BTS: " + BTS + ", TWS correction: " + twsCorrection + ", TWD correction: " + twdCorrection)
 });
