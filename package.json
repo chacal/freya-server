@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "baconjs": "~0.7.22",
-    "fast-csv": "~0.5.2"
+    "fast-csv": "~0.5.2",
+    "underscore": "~1.7.0"
   }
 }
