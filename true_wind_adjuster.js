@@ -11,9 +11,9 @@ calibration.initialize("tws_correction_table.csv");
 var rl = readline.createInterface({ input: process.stdin, output: "/dev/null" });
 var nmeaMessages = Bacon.fromEventTarget(rl, "line").filter(function(line) { return line.match(/^\$.*\*/) });
 
-var apparentWindsMessages = nmeaMessages.filter(function(line) { return line.match(/.*MWV.*R/) });
+var apparentWindMessages = nmeaMessages.filter(function(line) { return line.match(/.*MWV.*R/) });
 
-apparentWindsMessages.onValue(function(awsLine) {
+apparentWindMessages.onValue(function(awsLine) {
   var matches = /MWV,(.*),R,(.*?),/.exec(awsLine);
   AWA = matches[1];
   AWS = matches[2];
