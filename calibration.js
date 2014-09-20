@@ -1,5 +1,6 @@
 var csv = require("fast-csv");
 var _ = require("underscore");
+var Table = require('cli-table');
 
 var twsCorrectionTable = [];
 var NA_TABLE_VALUE = "-"
@@ -16,6 +17,7 @@ exports.initialize = function(twsCorrectionTableFile) {
     .on("data", _.partial(insertToTable, tableFromCsv))
     .on("end", function () {
       twsCorrectionTable = interpolateTable(tableFromCsv)
+      printCorrectionTable(twsCorrectionTable)
     });
 
   function insertToTable(table, data) {
@@ -106,6 +108,23 @@ function bilinearInterpolate(x1y1, x2y1, x1y2, x2y2, x, x1, x2, y, y1, y2) {
 
 function linearInterpolate(x, x1, x2, y1, y2) {
   return y1 + (y2 - y1) * ((x - x1) / (x2 - x1))
+}
+
+
+function printCorrectionTable(correctionTable) {
+  var outputTable = new Table({
+    head: ["", "0 kn", "1 kn", "2 kn", "3 kn", "4 kn", "5 kn", "6 kn", "7 kn", "8 kn"],
+    colWidths: [5, 6, 6, 6, 6, 6, 6, 6, 6, 6],
+    colAligns: ["left", "right", "right", "right", "right", "right", "right", "right", "right", "right"],
+    style: {compact: true}
+  });
+  for (var i = 0; i < correctionTable.length; i++) {
+    var rowHeader = (10 * i).toString()
+    var outputTableRow = {}
+    outputTableRow[rowHeader] = correctionTable[i]
+    outputTable.push(outputTableRow)
+  }
+  console.log(outputTable.toString())
 }
 
 
