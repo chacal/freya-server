@@ -1,33 +1,36 @@
-var readline = require('readline');
-var Bacon = require("baconjs").Bacon;
-var calibration = require("./calibration.js");
+var Promise = require('bluebird')
+var readline = require('readline')
+var Bacon = require("baconjs").Bacon
+var calibration = require("./calibration.js")
 
-var AWA;
-var AWS;
-var BTS;
+var AWA
+var AWS
+var BTS
 
-calibration.initialize("tws_correction_table.csv", "twd_correction_table.csv");
+calibration.initialize("tws_correction_table.csv", "twd_correction_table.csv")
+  .then(function() {
+    var rl = readline.createInterface({ input: process.stdin, output: "/dev/null" })
+    var nmeaMessages = Bacon.fromEventTarget(rl, "line").filter(function(line) { return line.match(/^\$.*\*/) })
 
-var rl = readline.createInterface({ input: process.stdin, output: "/dev/null" });
-var nmeaMessages = Bacon.fromEventTarget(rl, "line").filter(function(line) { return line.match(/^\$.*\*/) });
+    var apparentWindMessages = nmeaMessages.filter(function(line) { return line.match(/.*MWV.*R/) })
 
-var apparentWindMessages = nmeaMessages.filter(function(line) { return line.match(/.*MWV.*R/) });
+    apparentWindMessages.onValue(function(awsLine) {
+      var matches = /MWV,(.*),R,(.*?),/.exec(awsLine)
+      AWA = matches[1]
+      AWS = matches[2]
+    })
 
-apparentWindMessages.onValue(function(awsLine) {
-  var matches = /MWV,(.*),R,(.*?),/.exec(awsLine);
-  AWA = matches[1];
-  AWS = matches[2];
-});
+    var boatSpeedMessages = nmeaMessages.filter(function(line) { return line.match(/.*VHW.*/) })
 
-var boatSpeedMessages = nmeaMessages.filter(function(line) { return line.match(/.*VHW.*/) });
+    boatSpeedMessages.onValue(function(line) {
+      var matches = /VHW.*M,(.*?),/.exec(line)
+      BTS = matches[1]
+    })
 
-boatSpeedMessages.onValue(function(line) {
-  var matches = /VHW.*M,(.*?),/.exec(line);
-  BTS = matches[1];
-});
+    Bacon.interval(200).onValue(function() {
+      twsCorrection = calibration.calculateTwsCorrection(AWA, AWS, BTS)
+      twdCorrection = calibration.calculateTwdCorrection(AWA, AWS, BTS)
+      console.log("AWA: " + AWA + ", AWS: " + AWS + ", BTS: " + BTS + ", TWS correction: " + twsCorrection + ", TWD correction: " + twdCorrection)
+    })
+  })
 
-Bacon.interval(200).onValue(function() {
-  twsCorrection = calibration.calculateTwsCorrection(AWA, AWS, BTS);
-  twdCorrection = calibration.calculateTwdCorrection(AWA, AWS, BTS);
-  console.log("AWA: " + AWA + ", AWS: " + AWS + ", BTS: " + BTS + ", TWS correction: " + twsCorrection + ", TWD correction: " + twdCorrection)
-});

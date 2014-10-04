@@ -1,3 +1,4 @@
+var Promise = require('bluebird');
 var csv = require("fast-csv");
 var _ = require("underscore");
 var Table = require('cli-table');
@@ -11,22 +12,23 @@ var NA_TABLE_VALUE = "-"
 ///// Public API /////
 
 exports.initialize = function(twsCorrectionTableFile, twdCorrectionTableFile) {
-  readCorrectionTable(twsCorrectionTableFile, "TWS Correction Table", function(readTable) {
-    twsCorrectionTable = readTable
-
-    readCorrectionTable(twdCorrectionTableFile, "TWD Correction Table", function(readTable) {
-      twdCorrectionTable = readTable
+  return readCorrectionTable(twsCorrectionTableFile, "TWS Correction Table")
+    .then(function(twsTable) {
+      twsCorrectionTable = twsTable
+      return readCorrectionTable(twdCorrectionTableFile, "TWD Correction Table")
     })
-  })
-};
+    .then(function(twdTable) {
+      twdCorrectionTable = twdTable
+    })
+}
 
 exports.calculateTwsCorrection = function(awa, aws, bts) {
   return readCalibrationFromTable(twsCorrectionTable, awa, aws, bts)
-};
+}
 
 exports.calculateTwdCorrection = function(awa, aws, bts) {
   return readCalibrationFromTable(twdCorrectionTable, awa, aws, bts)
-};
+}
 
 
 
@@ -40,33 +42,35 @@ function readCalibrationFromTable(table, awa, aws, bts) {
   tableBts2 = Math.ceil(bts)
 
   // Surrounding corner table values
-  x1y1 = table[tableAwa1 / 10][tableBts1];  // divide AWA by 10 to get the correct row index
-  x1y2 = table[tableAwa2 / 10][tableBts1];
-  x2y1 = table[tableAwa1 / 10][tableBts2];
-  x2y2 = table[tableAwa2 / 10][tableBts2];
+  x1y1 = table[tableAwa1 / 10][tableBts1]  // divide AWA by 10 to get the correct row index
+  x1y2 = table[tableAwa2 / 10][tableBts1]
+  x2y1 = table[tableAwa1 / 10][tableBts2]
+  x2y2 = table[tableAwa2 / 10][tableBts2]
 
   // 2D interpolate between surrounding corner values
   return roundToPoint1(interpolate(x1y1, x2y1, x1y2, x2y2, bts, tableBts1, tableBts2, awa, tableAwa1, tableAwa2))
 }
 
 
-function readCorrectionTable(file, tableTitle, readyCallback) {
-  var tableFromCsv = []
-  var interpolatedTable = []
+function readCorrectionTable(file, tableTitle) {
+  return new Promise(function (resolve) {
+    var tableFromCsv = []
+    var interpolatedTable = []
 
-  csv
-    .fromPath(file, {comment: "#"})
-    .on("data", _.partial(insertToTable, tableFromCsv))
-    .on("end", function () {
-      interpolatedTable = interpolateTable(tableFromCsv)
-      console.log("\n\n" + tableTitle + ":")
-      printCorrectionTable(interpolatedTable)
-      readyCallback(interpolatedTable)
-    });
+    csv
+      .fromPath(file, {comment: "#"})
+      .on("data", _.partial(insertToTable, tableFromCsv))
+      .on("end", function () {
+        interpolatedTable = interpolateTable(tableFromCsv)
+        console.log("\n\n" + tableTitle + ":")
+        printCorrectionTable(interpolatedTable)
+        resolve(interpolatedTable)
+      })
 
-  function insertToTable(table, data) {
-    table.push(_.map(data, tryParseInt))
-  }
+    function insertToTable(table, data) {
+      table.push(_.map(data, tryParseInt))
+    }
+  })
 }
 
 
@@ -141,7 +145,7 @@ function printCorrectionTable(correctionTable) {
     colWidths: [5, 7, 7, 7, 7, 7, 7, 7, 7, 7],
     colAligns: ["right", "right", "right", "right", "right", "right", "right", "right", "right", "right"],
     style: {compact: true}
-  });
+  })
   for (var i = 0; i < correctionTable.length; i++) {
     var rowHeader = (10 * i).toString()
     var outputTableRow = {}
@@ -163,18 +167,18 @@ function map2DTable(table, func) {
   }
 }
 
-function roundDownTo10(value) { return Math.floor(value / 10) * 10; }
-function roundUpTo10(value) { return Math.ceil(value / 10) * 10; }
+function roundDownTo10(value) { return Math.floor(value / 10) * 10 }
+function roundUpTo10(value) { return Math.ceil(value / 10) * 10 }
 
-function roundToPoint1(value) { return Math.round(value * 10) / 10; }
+function roundToPoint1(value) { return Math.round(value * 10) / 10 }
 
 function tryParseInt(value) {
   var parsed = parseInt(value)
-  return _.isNaN(parsed) ? value : parsed;
+  return _.isNaN(parsed) ? value : parsed
 }
 
 function copy2DArray(toBeCopied) {
   return toBeCopied.map(function(arr) {
-    return arr.slice();
-  });
+    return arr.slice()
+  })
 }
