@@ -2,12 +2,13 @@ var Promise = require('bluebird')
 var readline = require('readline')
 var Bacon = require("baconjs").Bacon
 var calibration = require("./calibration.js")
+var path = require('path')
 
 var AWA
 var AWS
 var BTS
 
-calibration.initialize("tws_correction_table.csv", "twd_correction_table.csv")
+calibration.initialize(path.resolve(__dirname, "tws_correction_table.csv"), path.resolve(__dirname, "twd_correction_table.csv"))
   .then(function() {
     var rl = readline.createInterface({ input: process.stdin, output: "/dev/null" })
     var nmeaMessages = Bacon.fromEventTarget(rl, "line").filter(function(line) { return line.match(/^\$.*\*/) })
