@@ -14,11 +14,11 @@ console.log("Using devices:", serialDevice1, serialDevice2)
 
 var serialPort1 = openSerialPort(serialDevice1)
 var serialPort2 = openSerialPort(serialDevice2)
-var nmeaStream1 = nmeaStreamFrom(serialPort1)
-var nmeaStream2 = nmeaStreamFrom(serialPort2)
+var rawNmeaStream1 = nmeaStreamFrom(serialPort1)
+var rawNmeaStream2 = nmeaStreamFrom(serialPort2)
 
-pipeStreamTo(nmeaStream1, serialPort2)
-pipeStreamTo(nmeaStream2, serialPort1)
+pipeStreamTo(rawNmeaStream1, serialPort2)
+pipeStreamTo(rawNmeaStream2, serialPort1)
 
 function openSerialPort(device) {
   return process.env.USE_SIMULATOR ? new SerialportSimulator(device) : new serialport.SerialPort(device, { baudrate: 4800, parser: serialport.parsers.readline("\r\n") })
