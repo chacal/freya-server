@@ -1,7 +1,9 @@
 var serialport = require('serialport')
+var Bacon = require("baconjs").Bacon
+var SerialportSimulator = require('../testdata/serialport-simulator.js')
 
 if(process.argv.length != 4) {
-  console.log("Useage: node freya-server.js <serial-device-1> <serial-device-2>")
+  console.log("Usage: node freya-server.js <serial-device-1> <serial-device-2>")
   process.exit(1)
 }
 
@@ -12,20 +14,24 @@ console.log("Using devices:", serialDevice1, serialDevice2)
 
 var serialPort1 = openSerialPort(serialDevice1)
 var serialPort2 = openSerialPort(serialDevice2)
+var nmeaStream1 = nmeaStreamFrom(serialPort1)
+var nmeaStream2 = nmeaStreamFrom(serialPort2)
 
-serialPort1.on("open", function () {
-  serialPort1.on('data', function(data) {
-    serialPort2.write(data + '\r\n')
-  })
+
+nmeaStream1.onValue(function(val) {
+  serialPort2.write(val + '\r\n')
 })
 
-serialPort2.on("open", function () {
-  serialPort2.on('data', function(data) {
-    serialPort1.write(data + '\r\n')
-  })
+nmeaStream2.onValue(function(val) {
+  serialPort1.write(val + '\r\n')
 })
 
 
 function openSerialPort(device) {
-    return new serialport.SerialPort(device, { baudrate: 4800, parser: serialport.parsers.readline("\r\n") })
+  return process.env.USE_SIMULATOR ? new SerialportSimulator(device) : new serialport.SerialPort(device, { baudrate: 4800, parser: serialport.parsers.readline("\r\n") })
+}
+
+function nmeaStreamFrom(serialport) {
+  return Bacon.fromEvent(serialport, 'open')
+    .flatMapLatest(function() { return Bacon.fromEvent(serialport, 'data') })
 }
