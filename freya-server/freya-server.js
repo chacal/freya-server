@@ -17,15 +17,8 @@ var serialPort2 = openSerialPort(serialDevice2)
 var nmeaStream1 = nmeaStreamFrom(serialPort1)
 var nmeaStream2 = nmeaStreamFrom(serialPort2)
 
-
-nmeaStream1.onValue(function(val) {
-  serialPort2.write(val + '\r\n')
-})
-
-nmeaStream2.onValue(function(val) {
-  serialPort1.write(val + '\r\n')
-})
-
+pipeStreamTo(nmeaStream1, serialPort2)
+pipeStreamTo(nmeaStream2, serialPort1)
 
 function openSerialPort(device) {
   return process.env.USE_SIMULATOR ? new SerialportSimulator(device) : new serialport.SerialPort(device, { baudrate: 4800, parser: serialport.parsers.readline("\r\n") })
@@ -34,4 +27,10 @@ function openSerialPort(device) {
 function nmeaStreamFrom(serialport) {
   return Bacon.fromEvent(serialport, 'open')
     .flatMapLatest(function() { return Bacon.fromEvent(serialport, 'data') })
+}
+
+function pipeStreamTo(rawNmeaStream, destinationPort) {
+  rawNmeaStream.onValue(function(val) {
+    destinationPort.write(val + '\r\n')
+  })
 }
