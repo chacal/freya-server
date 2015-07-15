@@ -25,7 +25,7 @@ pipeStreamTo(rawNmeaStream2, serialPort1)
 logCombinedStreamWithTimestamp(rawNmeaStream1, rawNmeaStream2)
 
 function openSerialPort(device) {
-  return process.env.USE_SIMULATOR ? new SerialportSimulator(device) : new serialport.SerialPort(device, { baudrate: 4800, parser: serialport.parsers.readline("\r\n") })
+  return process.env.USE_SIMULATOR ? new SerialportSimulator(device) : new serialport.SerialPort(device, { baudrate: 4800, parser: serialport.parsers.readline("\r\n"), platformOptions: { vmin: 255, vtime: 0 }})
 }
 
 function nmeaStreamFrom(serialport) {
