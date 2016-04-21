@@ -18,7 +18,7 @@ var SerialportSimulator = function(device, options) {
 util.inherits(SerialportSimulator, EventEmitter)
 
 SerialportSimulator.prototype.write = function(data) {
-  process.stdout.write('Out - ' + this.device + ': ' + data)
+  process.stdout.write('SerialportSimulator ' + this.device + ': ' + data)
 }
 
 
