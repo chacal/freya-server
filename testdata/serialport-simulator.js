@@ -25,7 +25,7 @@ SerialportSimulator.prototype.write = function(data) {
 function emitOpen() { this.emit('open') }
 
 function startSendindData() {
-  Bacon.sequentially(100, lines).onValue(_.bind(function(line) {
+  Bacon.sequentially(3, lines).onValue(_.bind(function(line) {
     this.emit('data', line)
   }, this))
 }

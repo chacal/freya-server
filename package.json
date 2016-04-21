@@ -8,6 +8,7 @@
     "cli-table": "~0.3.0",
     "fast-csv": "~0.5.2",
     "lodash": "^3.9.3",
+    "nmea": "0.0.9",
     "serialport": "^1.7.4",
     "underscore": "~1.7.0"
   }
