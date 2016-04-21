@@ -1,15 +1,10 @@
 {
-  "name": "tt_nmea_utils",
+  "name": "freya_server",
   "version": "0.0.1",
   "private": true,
   "dependencies": {
     "baconjs": "^0.7.65",
-    "bluebird": "^2.3.4",
-    "cli-table": "~0.3.0",
-    "fast-csv": "~0.5.2",
     "lodash": "^3.9.3",
-    "nmea": "0.0.9",
-    "serialport": "^1.7.4",
-    "underscore": "~1.7.0"
+    "serialport": "^1.7.4"
   }
 }
