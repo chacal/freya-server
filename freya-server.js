@@ -1,6 +1,6 @@
 var serialport = require('serialport')
 var Bacon = require("baconjs").Bacon
-var SerialportSimulator = require('../testdata/serialport-simulator.js')
+var SerialportSimulator = require('./testdata/serialport-simulator.js')
 var fs = require('fs')
 var _ = require('lodash')
 
