@@ -15,22 +15,28 @@ var loggingDirectory = process.argv[4]
 
 console.log("Using devices:", serialDevice1, serialDevice2)
 
-var serialPort1 = openSerialPort(serialDevice1)
-var serialPort2 = openSerialPort(serialDevice2)
-var rawNmeaStream1 = nmeaStreamFrom(serialPort1)
-var rawNmeaStream2 = nmeaStreamFrom(serialPort2)
+var portOpenings = openSerialPortS(serialDevice1)
+  .zip(openSerialPortS(serialDevice2))
 
-pipeStreamTo(rawNmeaStream1, serialPort2)
-pipeStreamTo(rawNmeaStream2, serialPort1)
-logCombinedStreamWithTimestamp(rawNmeaStream1, rawNmeaStream2)
+portOpenings.onValues(function(port1, port2) {
+  var nmeaStream1 = nmeaStreamFrom(port1)
+  var nmeaStream2 = nmeaStreamFrom(port2)
+  pipeStreamTo(nmeaStream1, port2)
+  pipeStreamTo(nmeaStream2, port1)
+  logCombinedStreamWithTimestamp(nmeaStream1, nmeaStream2)
+})
+portOpenings.onError(function(e) {
+  console.log("Couldn't open serial device!", e)
+})
 
-function openSerialPort(device) {
-  return process.env.USE_SIMULATOR ? new SerialportSimulator(device) : new serialport.SerialPort(device, { baudrate: 4800, parser: serialport.parsers.readline("\r\n"), platformOptions: { vmin: 255, vtime: 0 }})
+function openSerialPortS(device) {
+  var port = process.env.USE_SIMULATOR ? new SerialportSimulator(device) : new serialport.SerialPort(device, { baudrate: 4800, parser: serialport.parsers.readline("\r\n"), platformOptions: { vmin: 255, vtime: 0 }})
+  return Bacon.fromEvent(port, 'open').map(port)
+    .merge(Bacon.fromEvent(port, 'error', Bacon.Error))
 }
 
 function nmeaStreamFrom(serialport) {
-  return Bacon.fromEvent(serialport, 'open')
-    .flatMapLatest(function() { return Bacon.fromEvent(serialport, 'data') })
+  return Bacon.fromEvent(serialport, 'data')
 }
 
 function pipeStreamTo(rawNmeaStream, destinationPort) {
