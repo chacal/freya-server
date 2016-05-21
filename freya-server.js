@@ -3,6 +3,7 @@ var Bacon = require("baconjs").Bacon
 var SerialportSimulator = require('./testdata/serialport-simulator.js')
 var fs = require('fs')
 var _ = require('lodash')
+var winston = require('winston')
 
 if(process.argv.length < 4) {
   console.log("Usage: node freya-server.js <serial-device-1> <serial-device-2> [logging-directory]")
@@ -49,24 +50,23 @@ function logCombinedStreamWithTimestamp(stream1, stream2) {
   if(! loggingDirectory)
     return
 
-  var outputFile = loggingDirectory + '/' + randomString(8) + '.log'
-  console.log("Logging to:", outputFile)
+  var logFile = loggingDirectory + '/freya_nmea.log'
+  var fileTransportConfig = {
+    timestamp: false,
+    filename: logFile,
+    json: false,
+    maxsize: 10 * 1024 * 1024,  // 10MB
+    showLevel: false
+  }
+  var fileLogger = new winston.Logger({ transports: [ new winston.transports.File(fileTransportConfig) ] })
 
-  var outputFileStream = fs.createWriteStream(outputFile, {flags: 'a'})
+  console.log("Logging to:", logFile)
+
   stream1.map(_.curry(appendWith)('-1- ')).merge(stream2.map(_.curry(appendWith)('-2- ')))
-    .map(function(nmeaSentence) { return Date.now() + ': ' + nmeaSentence + '\n'})
+    .map(function(nmeaSentence) { return Date.now() + ': ' + nmeaSentence })
     .onValue(function(value) {
-      outputFileStream.write(value)
+      fileLogger.info(value)
     })
 
   function appendWith(prefix, data) { return prefix + data}
-
-  function randomString(length)
-  {
-    var possible = "abcdefghijklmnopqrstuvwxyz0123456789"
-    var text = ''
-    for( var i = 0; i < length; i++ )
-      text += possible.charAt(Math.floor(Math.random() * possible.length))
-    return text
-  }
 }
