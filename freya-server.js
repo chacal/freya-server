@@ -2,6 +2,7 @@ var serialport = require('serialport')
 var Bacon = require("baconjs").Bacon
 var SerialportSimulator = require('./testdata/serialport-simulator.js')
 var fs = require('fs')
+var fsExtra = require('fs-extra')
 var _ = require('lodash')
 var winston = require('winston')
 
@@ -49,6 +50,8 @@ function pipeStreamTo(rawNmeaStream, destinationPort) {
 function logCombinedStreamWithTimestamp(stream1, stream2) {
   if(! loggingDirectory)
     return
+
+  fsExtra.ensureDirSync(loggingDirectory)
 
   var logFile = loggingDirectory + '/freya_nmea.log'
   var fileTransportConfig = {

@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "baconjs": "^0.7.65",
+    "fs-extra": "^0.30.0",
     "lodash": "^3.9.3",
     "serialport": "^2.1.0",
     "winston": "^2.2.0"
