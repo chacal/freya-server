@@ -1,4 +1,4 @@
-var serialport = require('serialport')
+var SerialPort = require('serialport')
 var Bacon = require("baconjs").Bacon
 var SerialportSimulator = require('./testdata/serialport-simulator.js')
 var fs = require('fs')
@@ -32,7 +32,7 @@ portOpenings.onError(function(e) {
 })
 
 function openSerialPortS(device) {
-  var port = process.env.USE_SIMULATOR ? new SerialportSimulator(device) : new serialport.SerialPort(device, { baudrate: 4800, parser: serialport.parsers.readline("\r\n"), platformOptions: { vmin: 255, vtime: 0 }})
+  var port = process.env.USE_SIMULATOR ? new SerialportSimulator(device) : new SerialPort(device, { baudrate: 4800, parser: SerialPort.parsers.readline("\r\n"), platformOptions: { vmin: 255, vtime: 0 }})
   return Bacon.fromEvent(port, 'open').map(port)
     .merge(Bacon.fromEvent(port, 'error', Bacon.Error))
 }
