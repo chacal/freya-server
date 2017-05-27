@@ -1,11 +1,15 @@
 {
   "name": "freya_server",
   "version": "0.0.1",
+  "main": "built/freya-server.js",
+  "scripts": {
+    "postinstall": "./node_modules/.bin/tsc"
+  },
   "private": true,
   "dependencies": {
+    "@types/node": "^7.0.8",
     "baconjs": "^0.7.65",
     "fs-extra": "^0.30.0",
-    "lodash": "^3.9.3",
     "serialport": "^4.0.7",
     "winston": "^2.2.0"
   }
