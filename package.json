@@ -8,9 +8,11 @@
   "private": true,
   "dependencies": {
     "@types/baconjs": "^0.7.32",
+    "@types/mqtt": "0.0.33",
     "@types/node": "^7.0.8",
     "baconjs": "^0.7.65",
     "fs-extra": "^0.30.0",
+    "mqtt": "^2.4.0",
     "serialport": "^4.0.7",
     "winston": "^2.2.0"
   }
