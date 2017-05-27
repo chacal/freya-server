@@ -1,4 +1,4 @@
-import NmeaStreamer from './freya-server'
+import NmeaStreamer from './NmeaStreamer'
 
 
 if(process.argv.length < 4) {

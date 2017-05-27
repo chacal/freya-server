@@ -1,6 +1,6 @@
 import SerialPort = require('serialport')
 import Bacon = require("baconjs")
-import SerialportSimulator from './serialport-simulator'
+import SerialportSimulator from './SerialportSimulator'
 import fs = require('fs')
 import fsExtra = require('fs-extra')
 import winston = require('winston')
