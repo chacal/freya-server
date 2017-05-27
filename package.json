@@ -1,7 +1,7 @@
 {
   "name": "freya_server",
   "version": "0.0.1",
-  "main": "built/freya-server.js",
+  "main": "built/Main.js",
   "scripts": {
     "postinstall": "./node_modules/.bin/tsc"
   },

@@ -8,32 +8,31 @@ import EventStream = Bacon.EventStream
 import EventEmitter = NodeJS.EventEmitter
 
 
-if(process.argv.length < 4) {
-  console.log("Usage: node freya-server.js <serial-device-1> <serial-device-2> [logging-directory]")
-  process.exit(1)
+export default {
+  start
 }
 
-const serialDevice1: string = process.argv[2]
-const serialDevice2: string = process.argv[3]
-const loggingDirectory: string = process.argv[4]
+function start(serialDevice1: string, serialDevice2: string, loggingDirectory?: string) {
+  console.log("Using devices:", serialDevice1, serialDevice2)
 
-console.log("Using devices:", serialDevice1, serialDevice2)
+  const portOpenings = Bacon.combineAsArray(openSerialPortS(serialDevice1), openSerialPortS(serialDevice2))
 
-const portOpenings = Bacon.combineAsArray(openSerialPortS(serialDevice1), openSerialPortS(serialDevice2))
+  portOpenings.onValues((port1: EventEmitter, port2: EventEmitter) => {
+    const nmeaStream1 = nmeaStreamFrom(port1)
+    const nmeaStream2 = nmeaStreamFrom(port2)
+    pipeStreamTo(nmeaStream1, port2)
+    pipeStreamTo(nmeaStream2, port1)
+    logCombinedStreamWithTimestamp(nmeaStream1, nmeaStream2, loggingDirectory)
 
-portOpenings.onValues((port1: EventEmitter, port2: EventEmitter) => {
-  const nmeaStream1 = nmeaStreamFrom(port1)
-  const nmeaStream2 = nmeaStreamFrom(port2)
-  pipeStreamTo(nmeaStream1, port2)
-  pipeStreamTo(nmeaStream2, port1)
-  logCombinedStreamWithTimestamp(nmeaStream1, nmeaStream2)
+    function nmeaStreamFrom(serialport) { return Bacon.fromEvent(serialport, 'data') }
 
-  function nmeaStreamFrom(serialport) { return Bacon.fromEvent(serialport, 'data') }
-  function pipeStreamTo(rawNmeaStream, destinationPort) { rawNmeaStream.onValue(val => destinationPort.write(val + '\r\n')) }
-})
-portOpenings.onError(function(e) {
-  console.log("Couldn't open serial device!", e)
-})
+    function pipeStreamTo(rawNmeaStream, destinationPort) { rawNmeaStream.onValue(val => destinationPort.write(val + '\r\n')) }
+  })
+
+  portOpenings.onError(function(e) {
+    console.log("Couldn't open serial device!", e)
+  })
+}
 
 
 function openSerialPortS(device: string): EventStream<any, EventEmitter> {
@@ -43,7 +42,7 @@ function openSerialPortS(device: string): EventStream<any, EventEmitter> {
 }
 
 
-function logCombinedStreamWithTimestamp(stream1: EventStream<any, string>, stream2: EventStream<any, string>) {
+function logCombinedStreamWithTimestamp(stream1: EventStream<any, string>, stream2: EventStream<any, string>, loggingDirectory?: string) {
   if(! loggingDirectory)
     return
 
