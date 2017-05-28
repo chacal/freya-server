@@ -25,7 +25,7 @@ function connectClient<E>(brokerUrl: string, mqttUsername?: string, mqttPassword
 }
 
 
-export function subscribeEvents<E>(mqttClient: Client, mqttPath: string): EventStream<E, ISensorEvent> {
+export function subscribeEvents<E>(mqttClient: Client, mqttPath: string|string[]): EventStream<E, ISensorEvent> {
   mqttClient.subscribe(mqttPath)
   return Bacon.fromEvent(mqttClient, 'message', sensorEventFromMQTTMessage)
 
