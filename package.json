@@ -7,6 +7,7 @@
   },
   "private": true,
   "dependencies": {
+    "@chacal/js-utils": "^1.0.4",
     "@types/baconjs": "^0.7.32",
     "@types/mqtt": "0.0.33",
     "@types/node": "^7.0.8",
