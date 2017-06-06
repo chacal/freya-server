@@ -4,6 +4,7 @@ import SerialportSimulator from './SerialportSimulator'
 import fs = require('fs')
 import fsExtra = require('fs-extra')
 import winston = require('winston')
+import DailyRotateFile = require('winston-daily-rotate-file')
 import EventStream = Bacon.EventStream
 import EventEmitter = NodeJS.EventEmitter
 
@@ -49,14 +50,18 @@ function logCombinedStreamWithTimestamp(stream1: EventStream<any, string>, strea
   fsExtra.ensureDirSync(loggingDirectory)
 
   const logFile = loggingDirectory + '/freya_nmea.log'
-  const fileTransportConfig = {
+
+  const transportConfig = {
     timestamp: false,
     filename: logFile,
     json: false,
     maxsize: 10 * 1024 * 1024,  // 10MB
-    showLevel: false
+    showLevel: false,
+    datePattern: '.yyyy-MM-dd',
+    prepend: false
   }
-  const fileLogger = new winston.Logger({ transports: [ new winston.transports.File(fileTransportConfig) ] })
+
+  const fileLogger = new winston.Logger({ transports: [ new DailyRotateFile(transportConfig) ] })
 
   console.log("Logging to:", logFile)
 

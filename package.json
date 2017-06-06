@@ -16,6 +16,7 @@
     "mqtt": "^2.4.0",
     "serialport": "^4.0.7",
     "typescript": "^2.3.3",
-    "winston": "^2.2.0"
+    "winston": "^2.2.0",
+    "winston-daily-rotate-file": "https://github.com/chacal/winston-daily-rotate-file"
   }
 }
