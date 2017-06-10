@@ -26,9 +26,13 @@ function start<E>(mqttClient: Client) {
 
   const alternatorTemperatures = subscribeEvents(mqttClient, ['/sensor/9/t/state']) as EventStream<E, SE.ITemperatureEvent>
   const latestAlternatorTemp = alternatorTemperatures.map(e => e.temperature).toProperty(0)
+  const currentPwmValue = latestAlternatorTemp.map(pwmValueForTemp)
 
-  latestAlternatorTemp.sampledBy(Bacon.interval(10000, ''))
-    .onValue(temperature => sendPwmCommand(mqttClient, pwmValueForTemp(temperature)))
+  currentPwmValue.sampledBy(Bacon.interval(10000, ''))
+    .slidingWindow(5)
+    .filter(hasNotOnlyZeros)
+    .map(takeLast)
+    .onValue(pwmValueToSend => sendPwmCommand(mqttClient, pwmValueToSend))
 }
 
 
@@ -56,3 +60,7 @@ function pwmValueForTemp(temperature: number): number {
   else
     return Math.round(config.lowTempPwm + (temperature - config.lowTempLimit) * pwmUnitsPerOneDegreeTemp)
 }
+
+
+function hasNotOnlyZeros(numbers: number[]): boolean { return numbers.find(n => n !== 0) !== undefined }
+function takeLast(numbers: number[]): number { return numbers[numbers.length - 1] }
