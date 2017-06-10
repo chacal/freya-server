@@ -1,6 +1,7 @@
 import NmeaStreamer from './NmeaStreamer'
 import MqttClientUtils from './MqttClientUtils'
 import BatteryEnergyCalculator from './BatteryEnergyCalculator'
+import AlternatorFanController from './AlternatorFanController'
 
 const NMEA_DEVICE_1 = process.env.NMEA_DEVICE_1 || ''
 const NMEA_DEVICE_2 = process.env.NMEA_DEVICE_2 || ''
@@ -15,3 +16,6 @@ NmeaStreamer.start(NMEA_DEVICE_1, NMEA_DEVICE_2, NMEA_LOG_DIR)
 
 MqttClientUtils.connectClient(MQTT_BROKER, MQTT_USERNAME, MQTT_PASSWORD)
   .onValue(client => BatteryEnergyCalculator.start(client))
+
+MqttClientUtils.connectClient(MQTT_BROKER, MQTT_USERNAME, MQTT_PASSWORD)
+  .onValue(client => AlternatorFanController.start(client))
