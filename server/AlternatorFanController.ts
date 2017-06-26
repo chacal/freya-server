@@ -12,7 +12,7 @@ const PWM_CONTROLLER_NODE      = 100
 const config = {
   lowTempLimit:   70,
   highTempLimit:  95,
-  lowTempPwm:     50,
+  lowTempPwm:     130,
   highTempPwm:    255
 }
 const pwmUnitsPerOneDegreeTemp = (config.highTempPwm - config.lowTempPwm) / (config.highTempLimit - config.lowTempLimit)
