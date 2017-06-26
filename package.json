@@ -13,6 +13,7 @@
     "@types/node": "^7.0.8",
     "baconjs": "^0.7.65",
     "fs-extra": "^0.30.0",
+    "hysteresis": "0.0.2",
     "mqtt": "^2.4.0",
     "serialport": "^4.0.7",
     "typescript": "^2.3.3",

@@ -2,6 +2,7 @@ import mqtt = require('mqtt')
 import Client = mqtt.Client
 import Bacon = require('baconjs')
 import EventStream = Bacon.EventStream
+import Hysteresis = require('hysteresis')
 import {subscribeEvents} from './MqttClientUtils'
 import {SensorEvents as SE} from '@chacal/js-utils'
 
@@ -9,13 +10,18 @@ const RFM_GW_COMMAND_TAG       = 'g'
 const DEVICE_LEVEL_COMMAND_TAG = 'l'
 const PWM_CONTROLLER_NODE      = 100
 
+enum FanState {OFF, ON}
+interface ControlState {fan: FanState, pwm: number}
+
 const config = {
-  lowTempLimit:   70,
-  highTempLimit:  95,
-  lowTempPwm:     130,
-  highTempPwm:    255
+  fanTurnOffTemp:    45,
+  fanTurnOnTemp:     75,
+  maxFanSpeedTemp:   95,
+  lowTempPwm:       140,
+  highTempPwm:      255
 }
-const pwmUnitsPerOneDegreeTemp = (config.highTempPwm - config.lowTempPwm) / (config.highTempLimit - config.lowTempLimit)
+const pwmUnitsPerOneDegreeTemp = (config.highTempPwm - config.lowTempPwm) / (config.maxFanSpeedTemp - config.fanTurnOnTemp)
+const hysteresisCheck = Hysteresis([config.fanTurnOffTemp, config.fanTurnOnTemp])
 
 export default {
   start
@@ -25,10 +31,12 @@ function start<E>(mqttClient: Client) {
   mqttClient.queueQoSZero = false
 
   const alternatorTemperatures = subscribeEvents(mqttClient, ['/sensor/9/t/state']) as EventStream<E, SE.ITemperatureEvent>
-  const latestAlternatorTemp = alternatorTemperatures.map(e => e.temperature).toProperty(0)
-  const currentPwmValue = latestAlternatorTemp.map(pwmValueForTemp)
+  const latestAlternatorTemp = alternatorTemperatures.map(e => e.temperature).toProperty(0).sampledBy(Bacon.interval(5000, ''))
+  const fanState = latestAlternatorTemp.map(hysteresisCheck).filter(v => v > 0).map(v => v === 1 ? FanState.OFF : FanState.ON)
+  const pwmValue = latestAlternatorTemp.map(pwmValueForTemp)
 
-  currentPwmValue.sampledBy(Bacon.interval(10000, ''))
+  Bacon.combineTemplate<E, ControlState>({fan: fanState, pwm: pwmValue})
+    .map(state => state.fan === FanState.ON ? state.pwm : 0)
     .slidingWindow(5)
     .filter(hasNotOnlyZeros)
     .map(takeLast)
@@ -53,12 +61,14 @@ function sendPwmCommand(mqttClient: Client, pwmValue: number) {
 
 
 function pwmValueForTemp(temperature: number): number {
-  if(temperature < config.lowTempLimit)
+  if(temperature < config.fanTurnOffTemp)
     return 0
-  else if(temperature > config.highTempLimit)
+  else if(temperature >= config.fanTurnOffTemp && temperature < config.fanTurnOnTemp)
+    return config.lowTempPwm
+  else if(temperature > config.maxFanSpeedTemp)
     return config.highTempPwm
   else
-    return Math.round(config.lowTempPwm + (temperature - config.lowTempLimit) * pwmUnitsPerOneDegreeTemp)
+    return Math.round(config.lowTempPwm + (temperature - config.fanTurnOnTemp) * pwmUnitsPerOneDegreeTemp)
 }
 
 
