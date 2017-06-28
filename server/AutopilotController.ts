@@ -10,7 +10,7 @@ import {SensorEvents as SE} from '@chacal/js-utils'
 
 const PGN_65360_FILTER = { id: 0xff5000, mask: 0x1ffff00 }    // Tracked course (magnetic)
 const TRACKED_COURSE_PGN = 65360
-
+const INSTANCE = '10'
 
 export default {
   start
@@ -18,7 +18,7 @@ export default {
 
 function start<E>(mqttClient: Client) {
   const autopilot = new AutopilotController()
-  const autopilotCommands = subscribeEvents(mqttClient, ['/command/10/a/state']) as EventStream<E, SE.IAutopilotCommand>
+  const autopilotCommands = subscribeEvents(mqttClient, [`/command/${INSTANCE}/a/state`]) as EventStream<E, SE.IAutopilotCommand>
 
   autopilotCommands.filter(e => e.buttonId === 1).onValue(() => autopilot.turnOn())
   autopilotCommands.filter(e => e.buttonId === 2).onValue(() => autopilot.turnOff())
@@ -27,7 +27,7 @@ function start<E>(mqttClient: Client) {
   autopilotCommands.filter(e => e.buttonId === 5).onValue(() => autopilot.adjustCourse(degToRads(-1)))
   autopilotCommands.filter(e => e.buttonId === 6).onValue(() => autopilot.adjustCourse(degToRads(-10)))
 
-  // TODO: Publish autopilot statuses to MQTT here (for autopilot web UI)
+  autopilot.status.onValue(status => mqttClient.publish(`/sensor/${INSTANCE}/b/state`, JSON.stringify(status), { retain: true, qos: 1 }))
 }
 
 
@@ -39,7 +39,7 @@ interface AutopilotState {
 
 class AutopilotController<E> {
   private can: CANTranceiver<E>
-  status: Property<ErrorEvent, AutopilotState>
+  status: Property<ErrorEvent, SE.IAutopilotState>
 
   constructor() {
     this.can = new CANTranceiver('can0', [PGN_65360_FILTER])
@@ -59,8 +59,11 @@ class AutopilotController<E> {
       .toProperty(undefined)
 
     this.status = Bacon.combineWith((autopilotEnabled, course) => ({
+      tag: 'b',
+      instance: INSTANCE,
+      ts: new Date().toISOString(),
       enabled: autopilotEnabled,
-      course: autopilotEnabled ? course : undefined
+      course: autopilotEnabled ? course : null
     }), state, trackedCourse)
   }
 
