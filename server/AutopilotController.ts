@@ -78,7 +78,7 @@ class AutopilotController<E> {
   }
 
   setCourse(courseRads: number) {
-    const intRadians = Math.round(courseRads * 10000)
+    const intRadians = Math.round(safeRadians(courseRads) * 10000)
 
     const lowerByte = intRadians & 0xff  // mask away upper bits
     const secondFrame = new Buffer('21013b0703040600', 'hex')
@@ -103,6 +103,11 @@ class AutopilotController<E> {
 
 function parseTrackedCourse(pgn65360Buffer): number {
   return pgn65360Buffer.readUInt16LE(5) / 10000
+}
+
+function safeRadians(rads: number): number {
+  let newRads = rads % (2 * Math.PI)
+  return newRads < 0 ? newRads + 2 * Math.PI : newRads
 }
 
 function degToRads(deg: number): number {
