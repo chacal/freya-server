@@ -101,7 +101,7 @@ class AutopilotController<E> {
 }
 
 
-function parseTrackedCourse(pgn65360Buffer): number {
+function parseTrackedCourse(pgn65360Buffer: Buffer): number {
   return pgn65360Buffer.readUInt16LE(5) / 10000
 }
 

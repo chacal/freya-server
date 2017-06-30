@@ -18,7 +18,7 @@ export default class SerialportSimulator extends EventEmitter {
     setTimeout(() => this.startSendindData(), 2000)
   }
 
-  write(data: string) {
+  write(data: any) {
     process.stdout.write('SerialportSimulator ' + this.device + ': ' + data)
   }
 

@@ -45,5 +45,5 @@ function pgnFramesFromChannel<E>(channel: any): EventStream<E, PGNFrame> {
 
   return frames.map(frame => Object.assign(frame, {pgn: extractPgn(frame)}))
 
-  function extractPgn(frame): number { return (frame.id >> 8) & 0x1ffff }
+  function extractPgn(frame: CANFrame): number { return (frame.id >> 8) & 0x1ffff }
 }

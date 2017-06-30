@@ -9,9 +9,12 @@
   "dependencies": {
     "@chacal/js-utils": "^1.2.0",
     "@types/baconjs": "^0.7.32",
+    "@types/fs-extra": "^3.0.3",
     "@types/mqtt": "0.0.33",
     "@types/node": "^7.0.8",
     "@types/ramda": "^0.24.0",
+    "@types/serialport": "^4.0.9",
+    "@types/winston": "^2.3.3",
     "baconjs": "^0.7.65",
     "fs-extra": "^0.30.0",
     "hysteresis": "0.0.2",
