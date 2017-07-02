@@ -27,7 +27,7 @@ function start<E>(mqttClient: Client) {
   autopilotCommands.filter(e => e.buttonId === 5).onValue(() => autopilot.adjustCourse(degToRads(-1)))
   autopilotCommands.filter(e => e.buttonId === 6).onValue(() => autopilot.adjustCourse(degToRads(-10)))
 
-  autopilot.status.onValue(status => mqttClient.publish(`/sensor/${INSTANCE}/b/state`, JSON.stringify(status), { retain: true, qos: 1 }))
+  autopilot.status.onValue(status => mqttClient.publish(`/local/sensor/${INSTANCE}/b/state`, JSON.stringify(status), { retain: true, qos: 1 }))
 }
 
 
