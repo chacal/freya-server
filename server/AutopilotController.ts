@@ -53,12 +53,12 @@ class AutopilotController<E> {
       .skipDuplicates()
 
     const trackedCourse = trackedCourseFrames
-      .map('.data')
+      .map(f => f.data)
       .map(parseTrackedCourse)
       .skipDuplicates()
       .toProperty(undefined)
 
-    this.status = Bacon.combineWith((autopilotEnabled, course) => ({
+    this.status = Bacon.combineWith((autopilotEnabled: boolean, course: number) => ({
       tag: 'b',
       instance: INSTANCE,
       ts: new Date().toISOString(),

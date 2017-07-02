@@ -20,7 +20,7 @@ function connectClient<E>(brokerUrl: string, mqttUsername?: string, mqttPassword
   client.on('offline', () => console.log('Disconnected from MQTT server'))
   client.on('error', (e) => console.log('MQTT client error', e))
 
-  return Bacon.fromEvent(client, 'connect').first()
+  return Bacon.fromEvent<E, Client>(client, 'connect').first()
     .map(() => client)
 }
 
