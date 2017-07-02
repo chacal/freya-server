@@ -14,10 +14,10 @@ enum FanState {OFF, ON}
 interface ControlState {fan: FanState, pwm: number}
 
 const config = {
-  fanTurnOffTemp:    45,
-  fanTurnOnTemp:     75,
-  maxFanSpeedTemp:   95,
-  lowTempPwm:       140,
+  fanTurnOffTemp:    50,
+  fanTurnOnTemp:     65,
+  maxFanSpeedTemp:   75,
+  lowTempPwm:       255,
   highTempPwm:      255
 }
 const pwmUnitsPerOneDegreeTemp = (config.highTempPwm - config.lowTempPwm) / (config.maxFanSpeedTemp - config.fanTurnOnTemp)
