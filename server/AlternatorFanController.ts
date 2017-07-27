@@ -15,7 +15,7 @@ interface ControlState {fan: FanState, pwm: number}
 
 const config = {
   fanTurnOffTemp:    50,
-  fanTurnOnTemp:     65,
+  fanTurnOnTemp:     70,
   maxFanSpeedTemp:   75,
   lowTempPwm:       255,
   highTempPwm:      255
