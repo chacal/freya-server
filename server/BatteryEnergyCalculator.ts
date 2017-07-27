@@ -5,6 +5,9 @@ import EventStream = Bacon.EventStream
 import {subscribeEvents} from './MqttClientUtils'
 import { SensorEvents as SE } from '@chacal/js-utils'
 
+// Exponential constant that is used to undervalue battery charging and overvalue discharging as the charge/discharge current increases
+const BATTERY_CHARGE_CONSTANT = 1.15
+
 export default {
   start
 }
@@ -34,9 +37,19 @@ function start<E>(mqttClient: Client) {
 
 function calculateNewEnergyEvent(oldEvent: SE.IElectricEnergyEvent, event: SE.ICurrentEvent): SE.IElectricEnergyEvent {
   const hoursSinceLastUpdate = (new Date().getTime() - new Date(oldEvent.ts).getTime()) / 1000 / 60 / 60
-  const ampHoursDelta = event.current * hoursSinceLastUpdate
+  const ampHoursDelta = calculateUsedAmpHours()
 
   return createEnergyEvent(event.instance, oldEvent.ampHours + ampHoursDelta)
+
+  function calculateUsedAmpHours(): number {
+    if(Math.abs(event.current) <= 1) {                   // Charge/discharge is < 1A => use the value directly
+      return event.current * hoursSinceLastUpdate
+    } else if(event.current > 0) {                       // Battery is charging -> energy is stored exponentially slower as the current increases
+      return Math.pow(event.current, 1 / BATTERY_CHARGE_CONSTANT) * hoursSinceLastUpdate
+    } else {                                             // Battery is discharging -> energy is consumed exponentially faster as the current increases
+      return -Math.pow(Math.abs(event.current), BATTERY_CHARGE_CONSTANT) * hoursSinceLastUpdate
+    }
+  }
 }
 
 function createEnergyEvent(instance: string, ampHours: number): SE.IElectricEnergyEvent {
