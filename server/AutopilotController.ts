@@ -69,12 +69,12 @@ class AutopilotController<E> {
 
   turnOn() {
     const frames = ['80110163ff00f804', '81013b0703040440', '820005ffffffffff']
-    frames.forEach(frame => this.can.send({id: 233688064, data: new Buffer(frame, 'hex')}))
+    frames.forEach(frame => this.can.send({id: 233690624, data: new Buffer(frame, 'hex')}))
   }
 
   turnOff() {
     const frames = ['80110163ff00f804', '81013b0703040400', '820005ffffffffff']
-    frames.forEach(frame => this.can.send({id: 233688064, data: new Buffer(frame, 'hex')}))
+    frames.forEach(frame => this.can.send({id: 233690624, data: new Buffer(frame, 'hex')}))
   }
 
   setCourse(courseRads: number) {
@@ -89,7 +89,7 @@ class AutopilotController<E> {
     thirdFrame[1] = upperByte
 
     const frames = [new Buffer('200e0150ff00f803', 'hex'), secondFrame, thirdFrame]
-    frames.forEach(frame => this.can.send({id: 233688064, data: frame}))
+    frames.forEach(frame => this.can.send({id: 233690624, data: frame}))
   }
 
   adjustCourse(adjustmentRads: number) {
