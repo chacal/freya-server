@@ -1,12 +1,10 @@
 import SerialPort = require('serialport')
 import Bacon = require("baconjs")
 import SerialportSimulator from './SerialportSimulator'
-import fs = require('fs')
 import fsExtra = require('fs-extra')
 import winston = require('winston')
 import DailyRotateFile = require('winston-daily-rotate-file')
 import EventStream = Bacon.EventStream
-import EventEmitter = NodeJS.EventEmitter
 
 declare module 'baconjs' {
   function fromEvent<E, A>(target: SerialPort|SerialportSimulator, eventName: string): EventStream<E, A>
@@ -29,7 +27,11 @@ function start(serialDevice1: string, serialDevice2: string, loggingDirectory?: 
     pipeStreamTo(nmeaStream2, port1)
     logCombinedStreamWithTimestamp(nmeaStream1, nmeaStream2, loggingDirectory)
 
-    function nmeaStreamFrom(serialport: SerialPort | SerialportSimulator): EventStream<{}, string> { return Bacon.fromEvent(serialport, 'data') }
+    function nmeaStreamFrom(serialport: SerialPort | SerialportSimulator): EventStream<{}, string> {
+      const parser = new SerialPort.parsers.Readline({delimiter: "\r\n" })
+      serialport.pipe(parser)
+      return Bacon.fromEvent(parser, 'data')
+    }
 
     function pipeStreamTo(rawNmeaStream: EventStream<{}, string>, destinationPort: SerialPort | SerialportSimulator) { rawNmeaStream.onValue(val => destinationPort.write(val + '\r\n')) }
   })
@@ -41,7 +43,7 @@ function start(serialDevice1: string, serialDevice2: string, loggingDirectory?: 
 
 
 function openSerialPort(device: string): EventStream<{}, SerialPort | SerialportSimulator> {
-  const port = process.env.USE_SIMULATOR ? new SerialportSimulator(device) : new SerialPort(device, { baudRate: 4800, parser: SerialPort.parsers.readline("\r\n"), platformOptions: { vmin: 255, vtime: 0 }})
+  const port = process.env.USE_SIMULATOR ? new SerialportSimulator(device) : new SerialPort(device, { baudRate: 4800, bindingOptions: { vmin: 255, vtime: 0 }})
   return Bacon.fromEvent(port, 'open').map(port)
     .merge(Bacon.fromEvent(port, 'error', e => new Bacon.Error(e)))
 }
