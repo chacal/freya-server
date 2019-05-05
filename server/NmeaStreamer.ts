@@ -58,16 +58,14 @@ function logCombinedStreamWithTimestamp(stream1: EventStream<any, string>, strea
   const logFile = loggingDirectory + '/freya_nmea.log'
 
   const transportConfig = {
-    timestamp: false,
     filename: logFile,
-    json: false,
-    maxsize: 10 * 1024 * 1024,  // 10MB
-    showLevel: false,
-    datePattern: '.yyyy-MM-dd',
-    prepend: false
+    maxsize: 10 * 1024 * 1024  // 10MB
   }
 
-  const fileLogger = new winston.Logger({ transports: [ new DailyRotateFile(transportConfig) ] })
+  const fileLogger = winston.createLogger({
+    format: winston.format.printf(info => `${info.message}`),
+    transports: [new DailyRotateFile(transportConfig)]
+  })
 
   console.log("Logging to:", logFile)
 
