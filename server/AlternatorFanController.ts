@@ -29,7 +29,7 @@ export default {
 function start<E>(mqttClient: Client) {
   mqttClient.queueQoSZero = false
 
-  const alternatorTemperatures = subscribeEvents(mqttClient, ['/sensor/9/t/state']) as EventStream<E, SE.ITemperatureEvent>
+  const alternatorTemperatures = subscribeEvents(mqttClient, ['/sensor/T100/t/state']) as EventStream<E, SE.ITemperatureEvent>
   const latestAlternatorTemp = alternatorTemperatures.map(e => e.temperature).toProperty(0).sampledBy(Bacon.interval(5000, ''))
   const fanState = latestAlternatorTemp.map(hysteresisCheck).filter(v => v > 0).map(v => v === 1 ? FanState.OFF : FanState.ON)
   const pwmValue = latestAlternatorTemp.map(pwmValueForTemp)
