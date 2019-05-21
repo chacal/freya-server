@@ -6,7 +6,6 @@ import Hysteresis = require('hysteresis')
 import {subscribeEvents} from './MqttClientUtils'
 import {SensorEvents as SE} from '@chacal/js-utils'
 
-const RFM_GW_COMMAND_TAG       = 'g'
 const DEVICE_LEVEL_COMMAND_TAG = 'l'
 const PWM_CONTROLLER_NODE      = 100
 
@@ -50,13 +49,11 @@ function sendPwmCommand(mqttClient: Client, pwmValue: number) {
     return
   }
 
-  const cmdBuf = Buffer.alloc(4)
-  cmdBuf.write(RFM_GW_COMMAND_TAG, 0, 1, 'ascii')
-  cmdBuf.writeUInt8(PWM_CONTROLLER_NODE, 1)
-  cmdBuf.write(DEVICE_LEVEL_COMMAND_TAG, 2, 1, 'ascii')
-  cmdBuf.writeUInt8(pwmValue, 3)
+  const cmdBuf = Buffer.alloc(2)
+  cmdBuf.write(DEVICE_LEVEL_COMMAND_TAG, 0, 1, 'ascii')
+  cmdBuf.writeUInt8(pwmValue, 1)
 
-  mqttClient.publish(`/nrf-command`, cmdBuf)
+  mqttClient.publish(`/rfm69gw/tx/${PWM_CONTROLLER_NODE}`, cmdBuf)
 }
 
 
