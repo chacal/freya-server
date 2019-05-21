@@ -1,8 +1,9 @@
+import {MqttClient} from 'mqtt'
+import {Mqtt} from '@chacal/js-utils'
 import NmeaStreamer from './NmeaStreamer'
-import MqttClientUtils from './MqttClientUtils'
 import BatteryEnergyCalculator from './BatteryEnergyCalculator'
 import AlternatorFanController from './AlternatorFanController'
-import AutopilotController from "./AutopilotController"
+import AutopilotController from './AutopilotController'
 
 const NMEA_DEVICE_1 = process.env.NMEA_DEVICE_1 || ''
 const NMEA_DEVICE_2 = process.env.NMEA_DEVICE_2 || ''
@@ -15,11 +16,12 @@ const MQTT_PASSWORD = process.env.MQTT_PASSWORD
 
 NmeaStreamer.start(NMEA_DEVICE_1, NMEA_DEVICE_2, NMEA_LOG_DIR)
 
-MqttClientUtils.connectClient(MQTT_BROKER, MQTT_USERNAME, MQTT_PASSWORD)
-  .onValue(client => BatteryEnergyCalculator.start(client))
+startModule(BatteryEnergyCalculator.start)
+startModule(AlternatorFanController.start)
+startModule(AutopilotController.start)
 
-MqttClientUtils.connectClient(MQTT_BROKER, MQTT_USERNAME, MQTT_PASSWORD)
-  .onValue(client => AlternatorFanController.start(client))
 
-MqttClientUtils.connectClient(MQTT_BROKER, MQTT_USERNAME, MQTT_PASSWORD)
-  .onValue(client => AutopilotController.start(client))
+function startModule(startFunc: (client: MqttClient) => void) {
+  const client = Mqtt.startMqttClient(MQTT_BROKER, MQTT_USERNAME, MQTT_PASSWORD)
+  client.on('connect', () => startFunc(client))
+}
