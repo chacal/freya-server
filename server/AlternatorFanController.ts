@@ -10,7 +10,6 @@ const DEVICE_LEVEL_COMMAND_TAG = 'l'
 const PWM_CONTROLLER_NODE      = 100
 
 enum FanState {OFF, ON}
-interface ControlState {fan: FanState, pwm: number}
 
 const config = {
   fanTurnOffTemp:    45,
@@ -29,12 +28,12 @@ export default {
 function start<E>(mqttClient: Client) {
   mqttClient.queueQoSZero = false
 
-  const alternatorTemperatures = subscribeEvents(mqttClient, ['/sensor/T100/t/state']) as EventStream<E, SE.ITemperatureEvent>
+  const alternatorTemperatures = subscribeEvents(mqttClient, ['/sensor/T100/t/state']) as EventStream<SE.ITemperatureEvent>
   const latestAlternatorTemp = alternatorTemperatures.map(e => e.temperature).toProperty(0).sampledBy(Bacon.interval(5000, ''))
   const fanState = latestAlternatorTemp.map(hysteresisCheck).filter(v => v > 0).map(v => v === 1 ? FanState.OFF : FanState.ON)
   const pwmValue = latestAlternatorTemp.map(pwmValueForTemp)
 
-  Bacon.combineTemplate<E, ControlState>({fan: fanState, pwm: pwmValue})
+  Bacon.combineTemplate({fan: fanState, pwm: pwmValue})
     .map(state => state.fan === FanState.ON ? state.pwm : 0)
     .slidingWindow(5)
     .filter(hasNotOnlyZeros)

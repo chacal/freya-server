@@ -1,8 +1,7 @@
 import mqtt = require('mqtt')
 import Client = mqtt.Client
-import Bacon = require('baconjs')
-import EventStream = Bacon.EventStream
-import {subscribeEvents} from './MqttClientUtils'
+import { EventStream, later } from 'baconjs'
+import { subscribeEvents } from './MqttClientUtils'
 import { SensorEvents as SE } from '@chacal/js-utils'
 
 // Exponential constant that is used to undervalue battery charging and overvalue discharging as the charge/discharge current increases
@@ -14,11 +13,11 @@ export default {
 
 function start<E>(mqttClient: Client) {
   const electricityEvents = subscribeEvents(mqttClient, ['/sensor/+/c/state', '/sensor/+/e/state'])
-  const currentEvents = electricityEvents.filter(e => e.tag === 'c') as EventStream<E, SE.ICurrentEvent>
-  const energyEvents = electricityEvents.filter(e => e.tag === 'e') as EventStream<E, SE.IElectricEnergyEvent>
+  const currentEvents = electricityEvents.filter(e => e.tag === 'c') as EventStream<SE.ICurrentEvent>
+  const energyEvents = electricityEvents.filter(e => e.tag === 'e') as EventStream<SE.IElectricEnergyEvent>
 
   currentEvents
-    .groupBy(event => event.instance)
+    .groupBy(event => event.instance, (groupedStream, groupStartingEvent) => groupedStream)
     .flatMap(streamByInstance => streamByInstance.first()
       .flatMapFirst(firstEvent => {
         return currentEnergyEventOrZeroEvent(firstEvent.instance)
@@ -28,9 +27,9 @@ function start<E>(mqttClient: Client) {
     )
     .onValue(e => publishTo(mqttClient, e))
 
-  function currentEnergyEventOrZeroEvent(instance: string): EventStream<E, SE.IElectricEnergyEvent> {
+  function currentEnergyEventOrZeroEvent(instance: string): EventStream<SE.IElectricEnergyEvent> {
     return energyEvents.filter(e => e.instance === instance)    // Wait 2s for an energy event for instance or return an energy event with 0 amp hours
-      .merge(Bacon.later(2000, createEnergyEvent(instance, 0)))
+      .merge(later(2000, createEnergyEvent(instance, 0)))
       .first()
   }
 }

@@ -1,6 +1,5 @@
 import can = require('socketcan')
-import Bacon = require('baconjs')
-import EventStream = Bacon.EventStream
+import { EventStream, fromBinder } from 'baconjs'
 
 export interface CANFilter {
   id: number,
@@ -19,7 +18,7 @@ export interface PGNFrame extends CANFrame {
 
 export default class CANTranceiver<E> {
   private channel: any
-  rxFrames: EventStream<E, PGNFrame>
+  rxFrames: EventStream<PGNFrame>
 
   constructor(canDevice: string, rxFilters: CANFilter[]) {
     this.channel = can.createRawChannel(canDevice)
@@ -37,8 +36,8 @@ export default class CANTranceiver<E> {
 
 
 
-function pgnFramesFromChannel<E>(channel: any): EventStream<E, PGNFrame> {
-  const frames: EventStream<E, CANFrame> = Bacon.fromBinder(sink => {
+function pgnFramesFromChannel<E>(channel: any): EventStream<PGNFrame> {
+  const frames: EventStream<CANFrame> = fromBinder(sink => {
     channel.addListener('onMessage', sink)
     return () => {}
   })

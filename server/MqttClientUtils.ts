@@ -4,13 +4,7 @@ import Bacon = require('baconjs')
 import EventStream = Bacon.EventStream
 import {SensorEvents} from '@chacal/js-utils'
 
-// Declare fromEvent() version that is used with MQTT message handler
-declare module 'baconjs' {
-  function fromEvent<E, A>(target: EventTarget | NodeJS.EventEmitter | JQuery, eventName: string, eventTransformer: (t: string, m: string) => A): EventStream<E, A>;
-}
-
-
-export function subscribeEvents<E>(mqttClient: Client, mqttPath: string | string[]): EventStream<E, SensorEvents.ISensorEvent> {
+export function subscribeEvents<E>(mqttClient: Client, mqttPath: string | string[]): EventStream<SensorEvents.ISensorEvent> {
   mqttClient.subscribe(mqttPath)
   return Bacon.fromEvent(mqttClient, 'message', sensorEventFromMQTTMessage)
 

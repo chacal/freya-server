@@ -26,6 +26,6 @@ export default class SerialportSimulator extends Readable {
   }
 
   private startSendindData() {
-    Bacon.sequentially(30, lines).onValue(line => this.push(line + "\r\n"))
+    Bacon.sequentially(30, lines).onValue(line => { this.push(line + "\r\n") })
   }
 }

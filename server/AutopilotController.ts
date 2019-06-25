@@ -18,7 +18,7 @@ export default {
 
 function start<E>(mqttClient: Client) {
   const autopilot = new AutopilotController()
-  const autopilotCommands = subscribeEvents(mqttClient, [`/command/${INSTANCE}/a/state`]) as EventStream<E, SE.IAutopilotCommand>
+  const autopilotCommands = subscribeEvents(mqttClient, [`/command/${INSTANCE}/a/state`]) as EventStream<SE.IAutopilotCommand>
 
   autopilotCommands.filter(e => e.buttonId === 1).onValue(() => autopilot.turnOn())
   autopilotCommands.filter(e => e.buttonId === 2).onValue(() => autopilot.turnOff())
@@ -27,7 +27,7 @@ function start<E>(mqttClient: Client) {
   autopilotCommands.filter(e => e.buttonId === 5).onValue(() => autopilot.adjustCourse(degToRads(-1)))
   autopilotCommands.filter(e => e.buttonId === 6).onValue(() => autopilot.adjustCourse(degToRads(-10)))
 
-  autopilot.status.onValue(status => mqttClient.publish(`/local/sensor/${INSTANCE}/b/state`, JSON.stringify(status), { retain: true, qos: 1 }))
+  autopilot.status.onValue(status => {mqttClient.publish(`/local/sensor/${INSTANCE}/b/state`, JSON.stringify(status), { retain: true, qos: 1 })})
 }
 
 
@@ -39,7 +39,7 @@ interface AutopilotState {
 
 class AutopilotController<E> {
   private can: CANTranceiver<E>
-  status: Property<ErrorEvent, SE.IAutopilotState>
+  status: Property<SE.IAutopilotState>
 
   constructor() {
     this.can = new CANTranceiver('can0', [PGN_65360_FILTER])
@@ -49,7 +49,7 @@ class AutopilotController<E> {
     const state = Bacon.interval(200, false)
       .merge(trackedCourseFrames.map(true))
       .slidingWindow(2)
-      .map(R.contains(true))
+      .map(window => R.contains(true, window))
       .skipDuplicates()
 
     const trackedCourse = trackedCourseFrames
