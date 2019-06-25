@@ -5,8 +5,8 @@ import Property = Bacon.Property
 import EventStream = Bacon.EventStream
 import mqtt = require('mqtt')
 import Client = mqtt.Client
-import {subscribeEvents} from './MqttClientUtils'
-import {SensorEvents as SE} from '@chacal/js-utils'
+import { subscribeEvents } from './MqttClientUtils'
+import { SensorEvents as SE } from '@chacal/js-utils'
 
 const PGN_65360_FILTER = { id: 0xff5000, mask: 0x1ffff00 }    // Tracked course (magnetic)
 const TRACKED_COURSE_PGN = 65360
@@ -27,9 +27,13 @@ function start<E>(mqttClient: Client) {
   autopilotCommands.filter(e => e.buttonId === 5).onValue(() => autopilot.adjustCourse(degToRads(-1)))
   autopilotCommands.filter(e => e.buttonId === 6).onValue(() => autopilot.adjustCourse(degToRads(-10)))
 
-  autopilot.status.onValue(status => {mqttClient.publish(`/local/sensor/${INSTANCE}/b/state`, JSON.stringify(status), { retain: true, qos: 1 })})
+  autopilot.status.onValue(status => {
+    mqttClient.publish(`/local/sensor/${INSTANCE}/b/state`, JSON.stringify(status), {
+      retain: true,
+      qos: 1
+    })
+  })
 }
-
 
 
 interface AutopilotState {
@@ -69,12 +73,12 @@ class AutopilotController<E> {
 
   turnOn() {
     const frames = ['80110163ff00f804', '81013b0703040440', '820005ffffffffff']
-    frames.forEach(frame => this.can.send({id: 233690624, data: new Buffer(frame, 'hex')}))
+    frames.forEach(frame => this.can.send({ id: 233690624, data: new Buffer(frame, 'hex') }))
   }
 
   turnOff() {
     const frames = ['80110163ff00f804', '81013b0703040400', '820005ffffffffff']
-    frames.forEach(frame => this.can.send({id: 233690624, data: new Buffer(frame, 'hex')}))
+    frames.forEach(frame => this.can.send({ id: 233690624, data: new Buffer(frame, 'hex') }))
   }
 
   setCourse(courseRads: number) {
@@ -89,7 +93,7 @@ class AutopilotController<E> {
     thirdFrame[1] = upperByte
 
     const frames = [new Buffer('200e0150ff00f803', 'hex'), secondFrame, thirdFrame]
-    frames.forEach(frame => this.can.send({id: 233690624, data: frame}))
+    frames.forEach(frame => this.can.send({ id: 233690624, data: frame }))
   }
 
   adjustCourse(adjustmentRads: number) {

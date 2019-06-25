@@ -22,18 +22,17 @@ export default class CANTranceiver<E> {
 
   constructor(canDevice: string, rxFilters: CANFilter[]) {
     this.channel = can.createRawChannel(canDevice)
-    if(rxFilters) {
+    if (rxFilters) {
       this.channel.setRxFilters(rxFilters)
     }
     this.rxFrames = pgnFramesFromChannel(this.channel)
     this.channel.start()
   }
 
-  send({id, data}: CANFrame) {
-    this.channel.send({id, length: data.length, data, ext: true })
+  send({ id, data }: CANFrame) {
+    this.channel.send({ id, length: data.length, data, ext: true })
   }
 }
-
 
 
 function pgnFramesFromChannel<E>(channel: any): EventStream<PGNFrame> {
@@ -42,7 +41,7 @@ function pgnFramesFromChannel<E>(channel: any): EventStream<PGNFrame> {
     return () => {}
   })
 
-  return frames.map(frame => Object.assign(frame, {pgn: extractPgn(frame)}))
+  return frames.map(frame => Object.assign(frame, { pgn: extractPgn(frame) }))
 
   function extractPgn(frame: CANFrame): number { return (frame.id >> 8) & 0x1ffff }
 }

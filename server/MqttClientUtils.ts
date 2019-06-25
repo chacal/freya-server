@@ -2,7 +2,7 @@ import mqtt = require('mqtt')
 import Client = mqtt.Client
 import Bacon = require('baconjs')
 import EventStream = Bacon.EventStream
-import {SensorEvents} from '@chacal/js-utils'
+import { SensorEvents } from '@chacal/js-utils'
 
 export function subscribeEvents<E>(mqttClient: Client, mqttPath: string | string[]): EventStream<SensorEvents.ISensorEvent> {
   mqttClient.subscribe(mqttPath)

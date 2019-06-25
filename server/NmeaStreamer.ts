@@ -10,7 +10,7 @@ export default {
 }
 
 function start(serialDevice1: string, serialDevice2: string, loggingDirectory?: string) {
-  console.log("Using devices:", serialDevice1, serialDevice2)
+  console.log('Using devices:', serialDevice1, serialDevice2)
 
   const portOpenings = combineAsArray(openSerialPort(serialDevice1), openSerialPort(serialDevice2))
 
@@ -22,7 +22,7 @@ function start(serialDevice1: string, serialDevice2: string, loggingDirectory?: 
     logCombinedStreamWithTimestamp(nmeaStream1, nmeaStream2, loggingDirectory)
 
     function nmeaStreamFrom(serialport: SerialPort | SerialportSimulator): EventStream<string> {
-      const parser = new SerialPort.parsers.Readline({delimiter: "\r\n" })
+      const parser = new SerialPort.parsers.Readline({ delimiter: '\r\n' })
       serialport.pipe(parser)
       return fromEvent(parser, 'data')
     }
@@ -30,21 +30,24 @@ function start(serialDevice1: string, serialDevice2: string, loggingDirectory?: 
     function pipeStreamTo(rawNmeaStream: EventStream<string>, destinationPort: SerialPort | SerialportSimulator) { rawNmeaStream.onValue(val => { destinationPort.write(val + '\r\n') }) }
   })
 
-  portOpenings.onError(function(e) {
-    console.log("Couldn't open serial device!", e)
+  portOpenings.onError(function (e) {
+    console.log('Couldn\'t open serial device!', e)
   })
 }
 
 
 function openSerialPort(device: string): EventStream<SerialPort | SerialportSimulator> {
-  const port = process.env.USE_SIMULATOR ? new SerialportSimulator(device) : new SerialPort(device, { baudRate: 4800, bindingOptions: { vmin: 255, vtime: 0 }})
+  const port = process.env.USE_SIMULATOR ? new SerialportSimulator(device) : new SerialPort(device, {
+    baudRate: 4800,
+    bindingOptions: { vmin: 255, vtime: 0 }
+  })
   return fromEvent(port, 'open').map(port)
     .merge(fromEvent(port, 'error', e => new Error(e)))
 }
 
 
 function logCombinedStreamWithTimestamp(stream1: EventStream<string>, stream2: EventStream<string>, loggingDirectory?: string) {
-  if(! loggingDirectory)
+  if (!loggingDirectory)
     return
 
   fsExtra.ensureDirSync(loggingDirectory)
@@ -61,7 +64,7 @@ function logCombinedStreamWithTimestamp(stream1: EventStream<string>, stream2: E
     transports: [new DailyRotateFile(transportConfig)]
   })
 
-  console.log("Logging to:", logFile)
+  console.log('Logging to:', logFile)
 
   stream1.map(line => '-1- ' + line)
     .merge(stream2.map(line => '-2- ' + line))

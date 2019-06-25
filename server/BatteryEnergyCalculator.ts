@@ -41,9 +41,9 @@ function calculateNewEnergyEvent(oldEvent: SE.IElectricEnergyEvent, event: SE.IC
   return createEnergyEvent(event.instance, oldEvent.ampHours + ampHoursDelta)
 
   function calculateUsedAmpHours(): number {
-    if(Math.abs(event.current) <= 1) {                   // Charge/discharge is < 1A => use the value directly
+    if (Math.abs(event.current) <= 1) {                   // Charge/discharge is < 1A => use the value directly
       return event.current * hoursSinceLastUpdate
-    } else if(event.current > 0) {                       // Battery is charging -> energy is stored exponentially slower as the current increases
+    } else if (event.current > 0) {                       // Battery is charging -> energy is stored exponentially slower as the current increases
       return Math.pow(event.current, 1 / BATTERY_CHARGE_CONSTANT) * hoursSinceLastUpdate
     } else {                                             // Battery is discharging -> energy is consumed exponentially faster as the current increases
       return -Math.pow(Math.abs(event.current), BATTERY_CHARGE_CONSTANT) * hoursSinceLastUpdate
