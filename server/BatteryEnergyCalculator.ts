@@ -17,7 +17,7 @@ function start<E>(mqttClient: Client) {
   const energyEvents = electricityEvents.filter(e => e.tag === 'e') as EventStream<SE.IElectricEnergyEvent>
 
   currentEvents
-    .groupBy(event => event.instance, (groupedStream, groupStartingEvent) => groupedStream)
+    .groupBy(event => event.instance)
     .flatMap(streamByInstance => streamByInstance.first()
       .flatMapFirst(firstEvent => {
         return currentEnergyEventOrZeroEvent(firstEvent.instance)

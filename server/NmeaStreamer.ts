@@ -27,7 +27,9 @@ function start(serialDevice1: string, serialDevice2: string, loggingDirectory?: 
       return fromEvent(parser, 'data')
     }
 
-    function pipeStreamTo(rawNmeaStream: EventStream<string>, destinationPort: SerialPort | SerialportSimulator) { rawNmeaStream.onValue(val => { destinationPort.write(val + '\r\n') }) }
+    function pipeStreamTo(rawNmeaStream: EventStream<string>, destinationPort: SerialPort | SerialportSimulator) {
+      rawNmeaStream.onValue(val => destinationPort.write(val + '\r\n'))
+    }
   })
 
   portOpenings.onError(function (e) {
@@ -69,5 +71,5 @@ function logCombinedStreamWithTimestamp(stream1: EventStream<string>, stream2: E
   stream1.map(line => '-1- ' + line)
     .merge(stream2.map(line => '-2- ' + line))
     .map(nmeaSentence => Date.now() + ': ' + nmeaSentence)
-    .onValue(logRow => { fileLogger.info(logRow) })
+    .onValue(logRow => fileLogger.info(logRow))
 }
