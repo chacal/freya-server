@@ -4,6 +4,9 @@ import NmeaStreamer from './NmeaStreamer'
 import BatteryEnergyCalculator from './BatteryEnergyCalculator'
 import AlternatorFanController from './AlternatorFanController'
 import AutopilotController from './AutopilotController'
+import D102NetworkDisplay from './D102'
+
+require('js-joda-timezone')
 
 const NMEA_DEVICE_1 = process.env.NMEA_DEVICE_1 || ''
 const NMEA_DEVICE_2 = process.env.NMEA_DEVICE_2 || ''
@@ -19,6 +22,7 @@ NmeaStreamer.start(NMEA_DEVICE_1, NMEA_DEVICE_2, NMEA_LOG_DIR)
 startModule(BatteryEnergyCalculator.start)
 startModule(AlternatorFanController.start)
 startModule(AutopilotController.start)
+startModule(D102NetworkDisplay.start)
 
 
 function startModule(startFunc: (client: MqttClient) => void) {
