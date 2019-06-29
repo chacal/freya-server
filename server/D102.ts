@@ -1,21 +1,21 @@
 import mqtt = require('mqtt')
 import Client = mqtt.Client
-import { Mqtt, SensorEvents as SE, NetworkDisplay, Coap } from '@chacal/js-utils'
+import { Mqtt, SensorEvents as SE, Coap } from '@chacal/js-utils'
 import { ChronoUnit, LocalTime } from 'js-joda'
 import { EventStream, combineTemplate, Property } from 'baconjs'
 import { parse } from 'url'
 
+const DISPLAY_SELF_INSTANCE = 'D102'
 const WATER_TANK_SENSOR_INSTANCE = 'W100'
 const HOUSE_BATTERY_SENSOR_INSTANCE = 'C400'
 const D102_ADDRESS = 'fdcc:28cc:6dba:0000:e75e:5b5b:2569:c66a'
-const VCC_POLLING_INTERVAL_MS = 10 * 60000
 const RENDERING_INTERVAL_MS = 5 * 60000
 
 
 type TankLevelStream = EventStream<SE.ITankLevel>
 type CombinedStream = Property<{
   waterTankLevel: SE.ITankLevel,
-  displayStatus: NetworkDisplay.DisplayStatus,
+  displayStatus: SE.IThreadDisplayStatus,
   houseBatteryCurrent: SE.ICurrentEvent,
   houseBatteryEnergy: SE.IElectricEnergyEvent
 }>
@@ -27,20 +27,13 @@ export default {
 function start<E>(mqttClient: Client) {
   mqttClient.subscribe('/sensor/+/+/state')
   const sensorEvents = Mqtt.messageStreamFrom(mqttClient).map(msg => JSON.parse(msg.toString()) as SE.ISensorEvent)
-  const displayStatuses = NetworkDisplay.statusesWithInterval(D102_ADDRESS, VCC_POLLING_INTERVAL_MS)
 
-  const combined = createCombinedStream(sensorEvents, displayStatuses)
-  setupNetworkDisplay(combined)
-
-  displayStatuses.onValue(publishThreadDisplayStatus)
-
-  function publishThreadDisplayStatus(status: SE.IThreadDisplayStatus) {
-    mqttClient.publish(`/sensor/${status.instance}/${status.tag}/state`, JSON.stringify(status))
-  }
+  setupNetworkDisplay(createCombinedStream(sensorEvents))
 }
 
-function createCombinedStream(sensorEvents: EventStream<SE.ISensorEvent>, displayStatuses: NetworkDisplay.StatusStream) {
+function createCombinedStream(sensorEvents: EventStream<SE.ISensorEvent>) {
   const waterLevelEvents = sensorEvents.filter(e => SE.isTankLevel(e) && e.instance === WATER_TANK_SENSOR_INSTANCE) as TankLevelStream
+  const displayStatuses = sensorEvents.filter(e => SE.isThreadDisplayStatus(e) && e.instance === DISPLAY_SELF_INSTANCE) as EventStream<SE.IThreadDisplayStatus>
   const houseBatteryCurrentEvents = sensorEvents.filter(e => SE.isCurrent(e) && e.instance === HOUSE_BATTERY_SENSOR_INSTANCE) as EventStream<SE.ICurrentEvent>
   const houseBatteryEnergyEvents = sensorEvents.filter(e => SE.isElectricEnergy(e) && e.instance === HOUSE_BATTERY_SENSOR_INSTANCE) as EventStream<SE.IElectricEnergyEvent>
 
