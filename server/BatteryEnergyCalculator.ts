@@ -5,7 +5,7 @@ import { subscribeEvents } from './MqttClientUtils'
 import { SensorEvents as SE } from '@chacal/js-utils'
 
 // Exponential constant that is used to undervalue battery charging and overvalue discharging as the charge/discharge current increases
-const BATTERY_CHARGE_CONSTANT = 1.02
+const BATTERY_CHARGE_CONSTANT = 1.005
 
 export default {
   start
