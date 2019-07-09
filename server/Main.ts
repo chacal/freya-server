@@ -5,6 +5,7 @@ import BatteryEnergyCalculator from './BatteryEnergyCalculator'
 import AlternatorFanController from './AlternatorFanController'
 import AutopilotController from './AutopilotController'
 import D102NetworkDisplay from './D102'
+import D103NetworkDisplay from './D103'
 import ThreadDisplayStatusCollector from './ThreadDisplayStatusCollector'
 
 require('js-joda-timezone')
@@ -24,6 +25,7 @@ startModule(BatteryEnergyCalculator.start)
 startModule(AlternatorFanController.start)
 startModule(AutopilotController.start)
 startModule(D102NetworkDisplay.start)
+startModule(D103NetworkDisplay.start)
 startModule(ThreadDisplayStatusCollector.start)
 
 
