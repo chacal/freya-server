@@ -6,7 +6,7 @@ import { EventStream, combineTemplate, Property } from 'baconjs'
 import { parse } from 'url'
 
 const DISPLAY_SELF_INSTANCE = 'D103'
-const AFT_SENSOR_INSTANCE = 'S216'
+const AFT_SENSOR_INSTANCE = 'S215'
 const SALOON_SENSOR_INSTANCE = 'S216'
 const OUTSIDE_SENSOR_INSTANCE = 'S217'
 const FORWARD_SENSOR_INSTANCE = 'S218'
