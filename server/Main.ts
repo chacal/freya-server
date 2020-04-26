@@ -8,7 +8,7 @@ import D102NetworkDisplay from './D102'
 import D103NetworkDisplay from './D103'
 import ThreadDisplayStatusCollector from './ThreadDisplayStatusCollector'
 
-require('js-joda-timezone')
+import '@js-joda/timezone'
 
 const NMEA_DEVICE_1 = process.env.NMEA_DEVICE_1 || ''
 const NMEA_DEVICE_2 = process.env.NMEA_DEVICE_2 || ''

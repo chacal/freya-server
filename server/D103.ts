@@ -1,7 +1,7 @@
 import mqtt = require('mqtt')
 import Client = mqtt.Client
 import { Mqtt, SensorEvents as SE, Coap } from '@chacal/js-utils'
-import { ChronoUnit, LocalTime } from 'js-joda'
+import { ChronoUnit, LocalTime } from '@js-joda/core'
 import { EventStream, combineTemplate, Property } from 'baconjs'
 import { parse } from 'url'
 
