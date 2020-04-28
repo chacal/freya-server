@@ -25,6 +25,6 @@
     "winston-daily-rotate-file": "^4.4.2"
   },
   "optionalDependencies": {
-    "socketcan": "^2.4.0"
+    "socketcan": "^2.8.0"
   }
 }
