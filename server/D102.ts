@@ -8,7 +8,7 @@ import { parse } from 'url'
 const DISPLAY_SELF_INSTANCE = 'D102'
 const WATER_TANK_SENSOR_INSTANCE = 'W100'
 const HOUSE_BATTERY_SENSOR_INSTANCE = 'C400'
-const D102_ADDRESS = 'fdcc:28cc:6dba:0000:e75e:5b5b:2569:c66a'
+const D102_ADDRESS = 'fdcc:28cc:6dba:0000:4e45:710b:06fb:0894'
 const RENDERING_INTERVAL_MS = 5 * 60000
 
 
