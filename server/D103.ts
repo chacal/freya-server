@@ -10,7 +10,7 @@ const AFT_SENSOR_INSTANCE = 'S215'
 const SALOON_SENSOR_INSTANCE = 'S216'
 const OUTSIDE_SENSOR_INSTANCE = 'S217'
 const FORWARD_SENSOR_INSTANCE = 'S218'
-const D102_ADDRESS = 'fdcc:28cc:6dba:0000:4f2a:cc0f:383e:9440'
+const D103_ADDRESS = 'fdcc:28cc:6dba:0000:4f2a:cc0f:383e:9440'
 const RENDERING_INTERVAL_MS = 5 * 60000
 
 
@@ -78,5 +78,5 @@ function renderData(aftTemp: number, saloonTemp: number, outsideTemp: number, fo
     { c: 's', i: 10, x: 230, y: 71, font: 12, msg: `${rssi} dBm` },
     { c: 's', i: 11, x: 241, y: 122, font: 12, msg: `${(vcc / 1000).toFixed(3)}V` }
   ]
-  Coap.postJson(parse(`coap://[${D102_ADDRESS}]/api/display`), displayData, false)
+  Coap.postJson(parse(`coap://[${D103_ADDRESS}]/api/display`), displayData, false)
 }
