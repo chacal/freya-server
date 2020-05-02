@@ -1,8 +1,8 @@
 import mqtt = require('mqtt')
 import Client = mqtt.Client
-import { Mqtt, SensorEvents as SE, Coap } from '@chacal/js-utils'
+import { Coap, Mqtt, SensorEvents as SE } from '@chacal/js-utils'
 import { ChronoUnit, LocalTime } from '@js-joda/core'
-import { EventStream, combineTemplate, Property } from 'baconjs'
+import { combineTemplate, EventStream, Property } from 'baconjs'
 import { parse } from 'url'
 
 const DISPLAY_SELF_INSTANCE = 'D103'
@@ -14,12 +14,12 @@ const D102_ADDRESS = 'fdcc:28cc:6dba:0000:4f2a:cc0f:383e:9440'
 const RENDERING_INTERVAL_MS = 5 * 60000
 
 
-type TemperatureStream = EventStream<SE.ITemperatureEvent>
+type EnvironmentStream = EventStream<SE.IEnvironmentEvent>
 type CombinedStream = Property<{
-  aftTemp: SE.ITemperatureEvent,
-  saloonTemp: SE.ITemperatureEvent,
-  outsideTemp: SE.ITemperatureEvent,
-  forwardTemp: SE.ITemperatureEvent,
+  aftTemp: SE.IEnvironmentEvent,
+  saloonTemp: SE.IEnvironmentEvent,
+  outsideTemp: SE.IEnvironmentEvent,
+  forwardTemp: SE.IEnvironmentEvent,
   displayStatus: SE.IThreadDisplayStatus,
 }>
 
@@ -38,16 +38,16 @@ function createCombinedStream(sensorEvents: EventStream<SE.ISensorEvent>) {
   const displayStatuses = sensorEvents.filter(e => SE.isThreadDisplayStatus(e) && e.instance === DISPLAY_SELF_INSTANCE) as EventStream<SE.IThreadDisplayStatus>
 
   return combineTemplate({
-    aftTemp: temperatureEvents(sensorEvents, AFT_SENSOR_INSTANCE),
-    saloonTemp: temperatureEvents(sensorEvents, SALOON_SENSOR_INSTANCE),
-    outsideTemp: temperatureEvents(sensorEvents, OUTSIDE_SENSOR_INSTANCE),
-    forwardTemp: temperatureEvents(sensorEvents, FORWARD_SENSOR_INSTANCE),
+    aftTemp: environmentEvents(sensorEvents, AFT_SENSOR_INSTANCE),
+    saloonTemp: environmentEvents(sensorEvents, SALOON_SENSOR_INSTANCE),
+    outsideTemp: environmentEvents(sensorEvents, OUTSIDE_SENSOR_INSTANCE),
+    forwardTemp: environmentEvents(sensorEvents, FORWARD_SENSOR_INSTANCE),
     displayStatus: displayStatuses
   })
 }
 
-function temperatureEvents(sensorEvents: EventStream<SE.ISensorEvent>, instance: string) {
-  return sensorEvents.filter(e => SE.isTemperature(e) && e.instance === instance) as TemperatureStream
+function environmentEvents(sensorEvents: EventStream<SE.ISensorEvent>, instance: string) {
+  return sensorEvents.filter(e => SE.isEnvironment(e) && e.instance === instance) as EnvironmentStream
 }
 
 function setupNetworkDisplay(combinedEvents: CombinedStream) {
