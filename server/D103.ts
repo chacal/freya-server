@@ -6,9 +6,9 @@ import { combineTemplate, EventStream, Property } from 'baconjs'
 import { parse } from 'url'
 
 const DISPLAY_SELF_INSTANCE = 'D103'
-const AFT_SENSOR_INSTANCE = 'S216'  // TODO: Change this when Aft sensor is installed
+const AFT_SENSOR_INSTANCE = 'S205'
 const SALOON_SENSOR_INSTANCE = 'S216'
-const OUTSIDE_SENSOR_INSTANCE = 'S217'
+const OUTSIDE_SENSOR_INSTANCE = 'S219'
 const FORWARD_SENSOR_INSTANCE = 'S218'
 const D103_ADDRESS = 'fdcc:28cc:6dba:0000:4f2a:cc0f:383e:9440'
 const RENDERING_INTERVAL_MS = 5 * 60000
