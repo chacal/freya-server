@@ -1,0 +1,21 @@
+parameters:
+  image_base: 'amd64'
+
+jobs:
+  - job: build_${{ parameters.image_base }}
+    displayName: Build ${{ parameters.image_base }} container
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - script: echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin
+        displayName: 'docker login'
+        env:
+          DOCKERHUB_USERNAME: $(DOCKERHUB_USERNAME)
+          DOCKERHUB_PASSWORD: $(DOCKERHUB_PASSWORD)
+      - script: docker run --privileged linuxkit/binfmt:v0.7
+        displayName: 'initialize binfmt'
+        condition: and(succeeded(), ne('${{ parameters.image_base }}', 'amd64'))
+      - script: docker build . -t jihartik/freya-server:${{ parameters.image_base }} --build-arg BASE=${{ parameters.image_base }}
+        displayName: 'build container'
+      - script: docker push jihartik/freya-server:${{ parameters.image_base }}
+        displayName: 'push container'

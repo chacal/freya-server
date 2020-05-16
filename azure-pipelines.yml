@@ -1,0 +1,33 @@
+trigger:
+  - prod
+
+pr: none
+
+jobs:
+  - template: .azure_pipelines/build_container.yml
+    parameters:
+      image_base: amd64
+
+  - template: .azure_pipelines/build_container.yml
+    parameters:
+      image_base: arm32v7
+
+  - job: create_manifest
+    displayName: Create and push container manifest
+    dependsOn:
+      - build_amd64
+      - build_arm32v7
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - script: echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin
+        displayName: 'docker login'
+        env:
+          DOCKERHUB_USERNAME: $(DOCKERHUB_USERNAME)
+          DOCKERHUB_PASSWORD: $(DOCKERHUB_PASSWORD)
+
+      - script: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create jihartik/freya-server:latest jihartik/freya-server:arm32v7 jihartik/freya-server:amd64
+        displayName: 'create manifest'
+
+      - script: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push jihartik/freya-server:latest
+        displayName: 'push manifest'
