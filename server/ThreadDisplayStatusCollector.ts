@@ -2,10 +2,12 @@ import mqtt = require('mqtt')
 import Client = mqtt.Client
 import { SensorEvents as SE, NetworkDisplay } from '@chacal/js-utils'
 import { fromArray } from 'baconjs'
+import { D102_ADDRESS } from './D102'
+import { D103_ADDRESS } from './D103'
 
 const DISPLAY_ADDRESSES = [
-  'fdcc:28cc:6dba:0000:4e45:710b:06fb:0894',  // D102
-  'fdcc:28cc:6dba:0000:4f2a:cc0f:383e:9440'   // D103
+  D102_ADDRESS,
+  D103_ADDRESS
 ]
 
 const STATUS_POLLING_INTERVAL_MS = 10 * 60000
