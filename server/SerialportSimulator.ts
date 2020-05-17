@@ -3,11 +3,9 @@ import path = require('path')
 import Bacon = require('baconjs')
 import { Readable } from 'stream'
 
-const lines = fs.readFileSync(path.resolve(__dirname + '/../testdata/Freya_20140913_1638.log')).toString().split('\n')
-
-
 export default class SerialportSimulator extends Readable {
   device: string
+  lines = fs.readFileSync(path.resolve(__dirname + '/../testdata/Freya_20140913_1638.log')).toString().split('\n')
 
   constructor(device: string) {
     super()
@@ -27,6 +25,6 @@ export default class SerialportSimulator extends Readable {
   }
 
   private startSendindData() {
-    Bacon.sequentially(30, lines).onValue(line => this.push(line + '\r\n'))
+    Bacon.sequentially(30, this.lines).onValue(line => this.push(line + '\r\n'))
   }
 }
