@@ -6,6 +6,7 @@ import AlternatorFanController from './AlternatorFanController'
 import AutopilotController from './AutopilotController'
 import D102NetworkDisplay from './D102'
 import D103NetworkDisplay from './D103'
+import D105NetworkDisplay from './D105'
 import ThreadDisplayStatusCollector from './ThreadDisplayStatusCollector'
 
 import '@js-joda/timezone'
@@ -14,7 +15,7 @@ const NMEA_DEVICE_1 = process.env.NMEA_DEVICE_1 || ''
 const NMEA_DEVICE_2 = process.env.NMEA_DEVICE_2 || ''
 const NMEA_LOG_DIR = process.env.NMEA_LOG_DIR
 
-const MQTT_BROKER = process.env.MQTT_BROKER || 'mqtts://mqtt.netserver.chacal.fi'
+const MQTT_BROKER = process.env.MQTT_BROKER || 'mqtts://sensor-backend.chacal.fi'
 const MQTT_USERNAME = process.env.MQTT_USERNAME
 const MQTT_PASSWORD = process.env.MQTT_PASSWORD
 
@@ -26,6 +27,7 @@ startModule(AlternatorFanController.start)
 startModule(AutopilotController.start)
 startModule(D102NetworkDisplay.start)
 startModule(D103NetworkDisplay.start)
+startModule(D105NetworkDisplay.start)
 startModule(ThreadDisplayStatusCollector.start)
 
 
