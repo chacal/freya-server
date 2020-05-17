@@ -64,9 +64,9 @@ export function render(obs: Observation, ds: IThreadDisplayStatus) {
 
   ctx.font = (centerStr.length < 3) || (leftStr.length + rightStr.length < 3) ? '66px RobotoCondensed700' : '60px RobotoCondensed700'
 
-  const leftX = leftStr.length === 1 ? 8 : -4
+  const leftX = leftStr.length === 1 ? 16 : -4
   const leftW = ctx.measureText(leftStr).width
-  const rightX = DISPLAY_WIDTH - (rightStr.length === 1 ? 8 : -2)
+  const rightX = DISPLAY_WIDTH - (rightStr.length === 1 ? 15 : -2)
   const rightW = ctx.measureText(rightStr).width
 
   ctx.fillText(leftStr, leftX, dataRowY)
@@ -91,9 +91,9 @@ export function render(obs: Observation, ds: IThreadDisplayStatus) {
   const voltageStr = `${(ds.vcc / 1000).toFixed(2)}V`
   const timeStr = LocalTime.from(nativeJs(obs.ts)).truncatedTo(ChronoUnit.MINUTES).toString()
 
-  ctx.fillText(voltageStr, 1, DISPLAY_HEIGHT - 1)
+  ctx.fillText(voltageStr, 5, DISPLAY_HEIGHT - 1)
   renderCenteredText(ctx, timeStr, DISPLAY_WIDTH / 2, DISPLAY_HEIGHT - 1)
-  renderRightAdjustedText(ctx, `${ds.parent.avgRssi} dBm`, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1)
+  renderRightAdjustedText(ctx, `${ds.parent.avgRssi} dBm`, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 4)
 
 
   //
