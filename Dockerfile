@@ -27,4 +27,3 @@ RUN apt-get update && apt-get install -y libcairo2 libpango1.0 libjpeg-dev libgi
 COPY --from=builder /opt/app/node_modules node_modules
 COPY --from=builder /opt/app/built built
 CMD ["node", "./built/Main.js"]
-USER node
