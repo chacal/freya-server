@@ -7,8 +7,8 @@ import { combineTemplate, EventStream, fromPromise, interval, once } from 'bacon
 import { getContext, renderCenteredText, renderRightAdjustedText } from '@chacal/canvas-render-utils'
 import { fetchLocationFromSignalK, getNearestObservation, Observation, secondsSince, sendImageToDisplay } from './utils'
 
-const DISPLAY_SELF_INSTANCE = 'D105'
 export const D105_ADDRESS = 'fdcc:28cc:6dba:0000:ff0d:e379:e425:2c81'
+export const D106_ADDRESS = 'fdcc:28cc:6dba:0000:cab2:5899:6be9:59c2'
 const RENDERING_INTERVAL_MS = 5 * 60000
 const OBSERVATION_UPDATE_INTERVAL_MS = 60000
 const OBSERVATION_AGE_WARNING_S = 1800 // 30 minutes
@@ -26,16 +26,22 @@ export default {
 
 function start<E>(mqttClient: Client) {
   mqttClient.subscribe('/sensor/+/+/state')
+  const observations = nearestObservations()
 
+  setupObservationRendering(mqttClient, 'D105', D105_ADDRESS, observations)
+  setupObservationRendering(mqttClient, 'D106', D106_ADDRESS, observations)
+}
+
+function setupObservationRendering(mqttClient: Client, displayId: string, displayAddress: string, observations: EventStream<Observation>) {
   const combined = combineTemplate({
-    displayStatus: displayStatuses(mqttClient),
-    observation: nearestObservations()
+    displayStatus: displayStatuses(mqttClient, displayId),
+    observation: observations
   })
 
   combined.first()
     .concat(combined.sample(RENDERING_INTERVAL_MS))
     .map(({ observation, displayStatus }) => render(observation, displayStatus))
-    .onValue(imageData => sendImageToDisplay(D105_ADDRESS, imageData))
+    .onValue(imageData => sendImageToDisplay(displayAddress, imageData))
 }
 
 export function render(obs: Observation, ds: IThreadDisplayStatus) {
@@ -114,7 +120,7 @@ function positions() {
     .flatMapLatest(() => fromPromise(fetchLocationFromSignalK()))
 }
 
-function displayStatuses(mqttClient: Client) {
+function displayStatuses(mqttClient: Client, displayId: string) {
   const sensorEvents = Mqtt.messageStreamFrom(mqttClient).map(msg => JSON.parse(msg.toString()) as SE.ISensorEvent)
-  return sensorEvents.filter(e => SE.isThreadDisplayStatus(e) && e.instance === DISPLAY_SELF_INSTANCE) as EventStream<SE.IThreadDisplayStatus>
+  return sensorEvents.filter(e => SE.isThreadDisplayStatus(e) && e.instance === displayId) as EventStream<SE.IThreadDisplayStatus>
 }

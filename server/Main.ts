@@ -6,7 +6,7 @@ import AlternatorFanController from './AlternatorFanController'
 import AutopilotController from './AutopilotController'
 import D102NetworkDisplay from './D102'
 import D103NetworkDisplay from './D103'
-import D105NetworkDisplay from './D105'
+import D105_D106_NetworkDisplay from './D105_D106'
 import ThreadDisplayStatusCollector from './ThreadDisplayStatusCollector'
 
 import '@js-joda/timezone'
@@ -27,7 +27,7 @@ startModule(AlternatorFanController.start)
 startModule(AutopilotController.start)
 startModule(D102NetworkDisplay.start)
 startModule(D103NetworkDisplay.start)
-startModule(D105NetworkDisplay.start)
+startModule(D105_D106_NetworkDisplay.start)
 startModule(ThreadDisplayStatusCollector.start)
 
 
