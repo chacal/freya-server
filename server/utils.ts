@@ -1,11 +1,15 @@
 import fetch from 'node-fetch'
 import { gzipSync } from 'zlib'
 import { toBinaryImage } from '@chacal/canvas-render-utils'
-import { Coap } from '@chacal/js-utils'
+import { Coap, Mqtt } from '@chacal/js-utils'
 import { parse } from 'url'
 import { ChronoUnit, LocalDateTime, nativeJs } from '@js-joda/core'
+import { SensorEvents as SE } from '@chacal/js-utils/built/ISensorEvent'
+import { EventStream, interval } from 'baconjs'
+import { MqttClient } from 'mqtt'
 
 const SIGNALK_POSITION_ENDPOINT = 'http://freya-raspi.chacal.fi/signalk/v1/api/vessels/self/navigation/position'
+export const FREYA_PIR_SENSORS = ['P311', 'P312']
 
 interface Position {
   lat: number
@@ -53,4 +57,21 @@ export function sendImageToDisplay(ipv6Destination: string, image: ImageData) {
 
 export function secondsSince(d: Date) {
   return LocalDateTime.from(nativeJs(d)).until(LocalDateTime.now(), ChronoUnit.SECONDS)
+}
+
+
+function motionDetections(mqttClient: MqttClient, pirSensors: string[]) {
+  const sensorEvents = Mqtt.messageStreamFrom(mqttClient).map(msg => JSON.parse(msg.toString()) as SE.ISensorEvent)
+  return sensorEvents.filter(e => SE.isPirEvent(e) && pirSensors.includes(e.instance) && e.motionDetected === true) as EventStream<SE.IPirEvent>
+}
+
+export function motionControlledInterval(mqttClient: MqttClient, pirSensors: string[], intervalMs: number, activeTimeWithoutMotionMs: number): EventStream<any> {
+  const timer = interval(intervalMs, '')
+  const motions = motionDetections(mqttClient, pirSensors)
+
+  return motions
+    .map(e => new Date(e.ts)).toProperty(new Date())
+    .sampledBy(timer.merge(motions))
+    .filter(ts => new Date().getTime() - ts.getTime() < activeTimeWithoutMotionMs)
+    .debounceImmediate(intervalMs)
 }

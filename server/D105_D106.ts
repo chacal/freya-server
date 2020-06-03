@@ -5,11 +5,20 @@ import { Mqtt, SensorEvents, SensorEvents as SE } from '@chacal/js-utils'
 import { ChronoUnit, LocalTime, nativeJs } from '@js-joda/core'
 import { combineTemplate, EventStream, fromPromise, interval, once } from 'baconjs'
 import { getContext, renderCenteredText, renderRightAdjustedText } from '@chacal/canvas-render-utils'
-import { fetchLocationFromSignalK, getNearestObservation, Observation, secondsSince, sendImageToDisplay } from './utils'
+import {
+  fetchLocationFromSignalK, FREYA_PIR_SENSORS,
+  getNearestObservation,
+  motionControlledInterval,
+  Observation,
+  secondsSince,
+  sendImageToDisplay
+} from './utils'
+import { MqttClient } from 'mqtt'
 
 export const D105_ADDRESS = 'fdcc:28cc:6dba:0000:ff0d:e379:e425:2c81'
 export const D106_ADDRESS = 'fdcc:28cc:6dba:0000:cab2:5899:6be9:59c2'
 const RENDERING_INTERVAL_MS = 5 * 60000
+const ACTIVE_TIME_WITHOUT_MOTION_MS = 12 * 60 * 60 * 1000  // Suspend rendering if no motion is detected for 12h
 const OBSERVATION_UPDATE_INTERVAL_MS = 60000
 const OBSERVATION_AGE_WARNING_S = 1800 // 30 minutes
 const MAX_RENDERED_OBSERVATION_AGE_S = 7200 // 2 hours
@@ -39,9 +48,13 @@ function setupObservationRendering(mqttClient: Client, displayId: string, displa
   })
 
   combined.first()
-    .concat(combined.sample(RENDERING_INTERVAL_MS))
+    .concat(combined.sampledBy(motionControlledRenderingInterval(mqttClient)))
     .map(({ observation, displayStatus }) => render(observation, displayStatus))
     .onValue(imageData => sendImageToDisplay(displayAddress, imageData))
+}
+
+function motionControlledRenderingInterval(mqttClient: MqttClient) {
+  return motionControlledInterval(mqttClient, FREYA_PIR_SENSORS, RENDERING_INTERVAL_MS, ACTIVE_TIME_WITHOUT_MOTION_MS)
 }
 
 export function render(obs: Observation, ds: IThreadDisplayStatus) {

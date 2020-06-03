@@ -1,15 +1,17 @@
 import mqtt = require('mqtt')
 import Client = mqtt.Client
-import { Mqtt, SensorEvents as SE, Coap } from '@chacal/js-utils'
+import { Coap, Mqtt, SensorEvents as SE } from '@chacal/js-utils'
 import { ChronoUnit, LocalTime } from '@js-joda/core'
-import { EventStream, combineTemplate, Property } from 'baconjs'
+import { combineTemplate, EventStream, Property } from 'baconjs'
 import { parse } from 'url'
+import { FREYA_PIR_SENSORS, motionControlledInterval } from './utils'
 
 const DISPLAY_SELF_INSTANCE = 'D102'
 const WATER_TANK_SENSOR_INSTANCE = 'W100'
 const HOUSE_BATTERY_SENSOR_INSTANCE = 'C400'
 export const D102_ADDRESS = 'fdcc:28cc:6dba:0000:4e45:710b:06fb:0894'
 const RENDERING_INTERVAL_MS = 5 * 60000
+const ACTIVE_TIME_WITHOUT_MOTION_MS = 12 * 60 * 60 * 1000  // Suspend rendering if no motion is detected for 12h
 
 
 type TankLevelStream = EventStream<SE.ITankLevel>
@@ -28,7 +30,7 @@ function start<E>(mqttClient: Client) {
   mqttClient.subscribe('/sensor/+/+/state')
   const sensorEvents = Mqtt.messageStreamFrom(mqttClient).map(msg => JSON.parse(msg.toString()) as SE.ISensorEvent)
 
-  setupNetworkDisplay(createCombinedStream(sensorEvents))
+  setupNetworkDisplay(createCombinedStream(sensorEvents), motionControlledInterval(mqttClient, FREYA_PIR_SENSORS, RENDERING_INTERVAL_MS, ACTIVE_TIME_WITHOUT_MOTION_MS))
 }
 
 function createCombinedStream(sensorEvents: EventStream<SE.ISensorEvent>) {
@@ -45,9 +47,9 @@ function createCombinedStream(sensorEvents: EventStream<SE.ISensorEvent>) {
   })
 }
 
-function setupNetworkDisplay(combinedEvents: CombinedStream) {
+function setupNetworkDisplay(combinedEvents: CombinedStream, samplingStream: EventStream<any>) {
   combinedEvents.first()
-    .concat(combinedEvents.sample(RENDERING_INTERVAL_MS))
+    .concat(combinedEvents.sampledBy(samplingStream))
     .onValue(v => renderData(
       v.waterTankLevel.tankLevel,
       v.houseBatteryCurrent.vcc,
@@ -75,5 +77,8 @@ function renderData(waterTankLevel: number, houseBatteryVoltage: number, houseBa
     { c: 's', i: 11, x: 135, y: 93, font: 14, msg: `V` },
     { c: 's', i: 12, x: 238, y: 93, font: 14, msg: `Ah` },
   ]
-  Coap.postJson(parse(`coap://[${D102_ADDRESS}]/api/display`), displayData, false)
+
+  const url = `coap://[${D102_ADDRESS}]/api/display`
+  console.log(`Sending ${JSON.stringify(displayData).length} bytes to ${url}`)
+  Coap.postJson(parse(url), displayData, false)
 }

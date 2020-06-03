@@ -4,6 +4,7 @@ import { Coap, Mqtt, SensorEvents as SE } from '@chacal/js-utils'
 import { ChronoUnit, LocalTime } from '@js-joda/core'
 import { combineTemplate, EventStream, Property } from 'baconjs'
 import { parse } from 'url'
+import { FREYA_PIR_SENSORS, motionControlledInterval } from './utils'
 
 const DISPLAY_SELF_INSTANCE = 'D103'
 const AFT_SENSOR_INSTANCE = 'S205'
@@ -12,6 +13,7 @@ const OUTSIDE_SENSOR_INSTANCE = 'S219'
 const FORWARD_SENSOR_INSTANCE = 'S218'
 export const D103_ADDRESS = 'fdcc:28cc:6dba:0000:4f2a:cc0f:383e:9440'
 const RENDERING_INTERVAL_MS = 5 * 60000
+const ACTIVE_TIME_WITHOUT_MOTION_MS = 12 * 60 * 60 * 1000  // Suspend rendering if no motion is detected for 12h
 
 
 type EnvironmentStream = EventStream<SE.IEnvironmentEvent>
@@ -31,7 +33,7 @@ function start<E>(mqttClient: Client) {
   mqttClient.subscribe('/sensor/+/+/state')
   const sensorEvents = Mqtt.messageStreamFrom(mqttClient).map(msg => JSON.parse(msg.toString()) as SE.ISensorEvent)
 
-  setupNetworkDisplay(createCombinedStream(sensorEvents))
+  setupNetworkDisplay(createCombinedStream(sensorEvents), motionControlledInterval(mqttClient, FREYA_PIR_SENSORS, RENDERING_INTERVAL_MS, ACTIVE_TIME_WITHOUT_MOTION_MS))
 }
 
 function createCombinedStream(sensorEvents: EventStream<SE.ISensorEvent>) {
@@ -50,9 +52,9 @@ function environmentEvents(sensorEvents: EventStream<SE.ISensorEvent>, instance:
   return sensorEvents.filter(e => SE.isEnvironment(e) && e.instance === instance) as EnvironmentStream
 }
 
-function setupNetworkDisplay(combinedEvents: CombinedStream) {
+function setupNetworkDisplay(combinedEvents: CombinedStream, samplingStream: EventStream<any>) {
   combinedEvents.first()
-    .concat(combinedEvents.sample(RENDERING_INTERVAL_MS))
+    .concat(combinedEvents.sampledBy(samplingStream))
     .onValue(v => renderData(
       v.aftTemp.temperature,
       v.saloonTemp.temperature,
@@ -78,5 +80,8 @@ function renderData(aftTemp: number, saloonTemp: number, outsideTemp: number, fo
     { c: 's', i: 10, x: 230, y: 71, font: 12, msg: `${rssi} dBm` },
     { c: 's', i: 11, x: 241, y: 122, font: 12, msg: `${(vcc / 1000).toFixed(3)}V` }
   ]
-  Coap.postJson(parse(`coap://[${D103_ADDRESS}]/api/display`), displayData, false)
+
+  const url = `coap://[${D103_ADDRESS}]/api/display`
+  console.log(`Sending ${JSON.stringify(displayData).length} bytes to ${url}`)
+  Coap.postJson(parse(url), displayData, false)
 }
