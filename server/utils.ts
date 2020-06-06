@@ -88,3 +88,8 @@ export function jsonMessagesFrom(mqttClient: MqttClient): EventStream<object> {
     })
     .filter(e => e !== null)
 }
+
+export function getRandomInt(max: number) {
+  max = Math.floor(max)
+  return Math.floor(Math.random() * (max + 1))
+}

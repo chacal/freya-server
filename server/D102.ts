@@ -4,13 +4,13 @@ import { Coap, SensorEvents as SE } from '@chacal/js-utils'
 import { ChronoUnit, LocalTime } from '@js-joda/core'
 import { combineTemplate, EventStream, Property } from 'baconjs'
 import { parse } from 'url'
-import { FREYA_PIR_SENSORS, jsonMessagesFrom, motionControlledInterval } from './utils'
+import { FREYA_PIR_SENSORS, getRandomInt, jsonMessagesFrom, motionControlledInterval } from './utils'
 
 const DISPLAY_SELF_INSTANCE = 'D102'
 const WATER_TANK_SENSOR_INSTANCE = 'W100'
 const HOUSE_BATTERY_SENSOR_INSTANCE = 'C400'
 export const D102_ADDRESS = 'fdcc:28cc:6dba:0000:4e45:710b:06fb:0894'
-const RENDERING_INTERVAL_MS = 5 * 60000
+const RENDERING_INTERVAL_MS = 5 * 60000 + getRandomInt(30000)
 const ACTIVE_TIME_WITHOUT_MOTION_MS = 12 * 60 * 60 * 1000  // Suspend rendering if no motion is detected for 12h
 
 
