@@ -1,10 +1,10 @@
 import mqtt = require('mqtt')
 import Client = mqtt.Client
-import { Coap, Mqtt, SensorEvents as SE } from '@chacal/js-utils'
+import { Coap, SensorEvents as SE } from '@chacal/js-utils'
 import { ChronoUnit, LocalTime } from '@js-joda/core'
 import { combineTemplate, EventStream, Property } from 'baconjs'
 import { parse } from 'url'
-import { FREYA_PIR_SENSORS, motionControlledInterval } from './utils'
+import { FREYA_PIR_SENSORS, jsonMessagesFrom, motionControlledInterval } from './utils'
 
 const DISPLAY_SELF_INSTANCE = 'D102'
 const WATER_TANK_SENSOR_INSTANCE = 'W100'
@@ -28,7 +28,7 @@ export default {
 
 function start<E>(mqttClient: Client) {
   mqttClient.subscribe('/sensor/+/+/state')
-  const sensorEvents = Mqtt.messageStreamFrom(mqttClient).map(msg => JSON.parse(msg.toString()) as SE.ISensorEvent)
+  const sensorEvents = jsonMessagesFrom(mqttClient) as EventStream<SE.ISensorEvent>
 
   setupNetworkDisplay(createCombinedStream(sensorEvents), motionControlledInterval(mqttClient, FREYA_PIR_SENSORS, RENDERING_INTERVAL_MS, ACTIVE_TIME_WITHOUT_MOTION_MS))
 }

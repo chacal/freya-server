@@ -61,7 +61,7 @@ export function secondsSince(d: Date) {
 
 
 function motionDetections(mqttClient: MqttClient, pirSensors: string[]) {
-  const sensorEvents = Mqtt.messageStreamFrom(mqttClient).map(msg => JSON.parse(msg.toString()) as SE.ISensorEvent)
+  const sensorEvents = jsonMessagesFrom(mqttClient) as EventStream<SE.ISensorEvent>
   return sensorEvents.filter(e => SE.isPirEvent(e) && pirSensors.includes(e.instance) && e.motionDetected === true) as EventStream<SE.IPirEvent>
 }
 
@@ -74,4 +74,17 @@ export function motionControlledInterval(mqttClient: MqttClient, pirSensors: str
     .sampledBy(timer.merge(motions))
     .filter(ts => new Date().getTime() - ts.getTime() < activeTimeWithoutMotionMs)
     .debounceImmediate(intervalMs)
+}
+
+export function jsonMessagesFrom(mqttClient: MqttClient): EventStream<object> {
+  return Mqtt.messageStreamFrom(mqttClient)
+    .map(msg => {
+      try {
+        return JSON.parse(msg.toString())
+      } catch {
+        console.error('Got invalid sensor event: ' + msg.toString())
+        return null
+      }
+    })
+    .filter(e => e !== null)
 }

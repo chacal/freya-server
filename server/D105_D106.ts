@@ -1,13 +1,15 @@
 import mqtt = require('mqtt')
 import Client = mqtt.Client
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
-import { Mqtt, SensorEvents, SensorEvents as SE } from '@chacal/js-utils'
+import { SensorEvents, SensorEvents as SE } from '@chacal/js-utils'
 import { ChronoUnit, LocalTime, nativeJs } from '@js-joda/core'
 import { combineTemplate, EventStream, fromPromise, interval, once } from 'baconjs'
 import { getContext, renderCenteredText, renderRightAdjustedText } from '@chacal/canvas-render-utils'
 import {
-  fetchLocationFromSignalK, FREYA_PIR_SENSORS,
+  fetchLocationFromSignalK,
+  FREYA_PIR_SENSORS,
   getNearestObservation,
+  jsonMessagesFrom,
   motionControlledInterval,
   Observation,
   secondsSince,
@@ -134,6 +136,6 @@ function positions() {
 }
 
 function displayStatuses(mqttClient: Client, displayId: string) {
-  const sensorEvents = Mqtt.messageStreamFrom(mqttClient).map(msg => JSON.parse(msg.toString()) as SE.ISensorEvent)
+  const sensorEvents = jsonMessagesFrom(mqttClient) as EventStream<SE.ISensorEvent>
   return sensorEvents.filter(e => SE.isThreadDisplayStatus(e) && e.instance === displayId) as EventStream<SE.IThreadDisplayStatus>
 }
