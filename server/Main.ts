@@ -1,5 +1,5 @@
-import {MqttClient} from 'mqtt'
-import {Mqtt} from '@chacal/js-utils'
+import { MqttClient } from 'mqtt'
+import { Mqtt } from '@chacal/js-utils'
 import NmeaStreamer from './NmeaStreamer'
 import BatteryEnergyCalculator from './BatteryEnergyCalculator'
 import AlternatorFanController from './AlternatorFanController'
@@ -8,6 +8,7 @@ import D102NetworkDisplay from './D102'
 import D103NetworkDisplay from './D103'
 import D105_D106_NetworkDisplay from './D105_D106'
 import ThreadDisplayStatusCollector from './ThreadDisplayStatusCollector'
+import Huawei4GModemStatusPoller from './Huawei4GModemStatusPoller'
 
 import '@js-joda/timezone'
 
@@ -29,6 +30,7 @@ startModule(D102NetworkDisplay.start)
 startModule(D103NetworkDisplay.start)
 startModule(D105_D106_NetworkDisplay.start)
 startModule(ThreadDisplayStatusCollector.start)
+startModule(Huawei4GModemStatusPoller.start)
 
 
 function startModule(startFunc: (client: MqttClient) => void) {

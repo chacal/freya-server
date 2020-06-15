@@ -16,6 +16,7 @@
     "@types/node-fetch": "^2.5.7",
     "@types/ramda": "^0.27.4",
     "@types/serialport": "^8.0.0",
+    "@types/xml2js": "^0.4.5",
     "baconjs": "^3.0.13",
     "fs-extra": "^9.0.0",
     "hysteresis": "0.0.2",
@@ -25,7 +26,8 @@
     "serialport": "^8.0.7",
     "typescript": "^3.8.3",
     "winston": "^3.2.1",
-    "winston-daily-rotate-file": "^4.4.2"
+    "winston-daily-rotate-file": "^4.4.2",
+    "xml2js": "^0.4.23"
   },
   "optionalDependencies": {
     "socketcan": "^2.8.0"
