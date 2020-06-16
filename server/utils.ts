@@ -93,3 +93,18 @@ export function getRandomInt(max: number) {
   max = Math.floor(max)
   return Math.floor(Math.random() * (max + 1))
 }
+
+export function cellularNetworkStr(networkType: number) {
+  switch (networkType) {
+    case 0:
+      return '-'
+    case 1:
+    case 2:
+    case 3:
+      return '2G'
+    case 19:
+      return '4G'
+    default:
+      return '3G'
+  }
+}
