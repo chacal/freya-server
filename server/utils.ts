@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 import { gzipSync } from 'zlib'
-import { toBinaryImage } from '@chacal/canvas-render-utils'
+import { toBinaryImage, toBWRGrayScale } from '@chacal/canvas-render-utils'
 import { Coap, Mqtt } from '@chacal/js-utils'
 import { parse } from 'url'
 import { ChronoUnit, LocalDateTime, nativeJs } from '@js-joda/core'
@@ -49,8 +49,16 @@ export function getNearestObservation(p: Position): Promise<Observation> {
 }
 
 export function sendImageToDisplay(ipv6Destination: string, image: ImageData) {
-  const payload = gzipSync(toBinaryImage(image))
+  return sendCompressedDataToDisplay(ipv6Destination, toBinaryImage(image))
+}
+
+export function sendBWRImageToDisplay(ipv6Destination: string, image: ImageData) {
+  return sendCompressedDataToDisplay(ipv6Destination, toBWRGrayScale(image))
+}
+
+function sendCompressedDataToDisplay(ipv6Destination: string, uncompressed: Buffer) {
   const url = `coap://[${ipv6Destination}]/api/image`
+  const payload = gzipSync(uncompressed)
   console.log(`Sending ${payload.length} bytes to ${url}`)
   return Coap.postOctetStream(parse(url), payload, false)
 }
