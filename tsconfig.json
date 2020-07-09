@@ -5,7 +5,8 @@
     "target": "es6",
     "module": "commonjs",
     "noImplicitThis": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "esModuleInterop": true
   },
   "include": [
     "./server/**/*"

@@ -9,6 +9,7 @@ import D103NetworkDisplay from './D103'
 import D105_D106_NetworkDisplay from './D105_D106'
 import ThreadDisplayStatusCollector from './ThreadDisplayStatusCollector'
 import Huawei4GModemStatusPoller from './Huawei4GModemStatusPoller'
+import startRecentPositionCache from './RecentPositionCache'
 
 import '@js-joda/timezone'
 
@@ -20,6 +21,8 @@ const MQTT_BROKER = process.env.MQTT_BROKER || 'mqtts://sensor-backend.chacal.fi
 const MQTT_USERNAME = process.env.MQTT_USERNAME
 const MQTT_PASSWORD = process.env.MQTT_PASSWORD
 
+const SIGNALK_SERVER = process.env.SIGNALK_SERVER || 'localhost'
+const POSITION_CACHE_FILE = process.env.POSITION_CACHE_FILE || 'position_cache.json'
 
 NmeaStreamer.start(NMEA_DEVICE_1, NMEA_DEVICE_2, NMEA_LOG_DIR)
 
@@ -31,6 +34,7 @@ startModule(D103NetworkDisplay.start)
 startModule(D105_D106_NetworkDisplay.start)
 startModule(ThreadDisplayStatusCollector.start)
 startModule(Huawei4GModemStatusPoller.start)
+startRecentPositionCache(POSITION_CACHE_FILE, SIGNALK_SERVER)
 
 
 function startModule(startFunc: (client: MqttClient) => void) {
