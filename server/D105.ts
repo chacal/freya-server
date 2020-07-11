@@ -32,6 +32,7 @@ const MAX_RENDERED_OBSERVATION_AGE_S = 7200 // 2 hours
 const OBSERVATION_AGE_WARNING_S = 1800 // 30 minutes
 
 export default function start(mqttClient: Client, observations: EventStream<Observation>) {
+  mqttClient.subscribe('/sensor/+/+/state')
   const combined = combineTemplate({
     displayStatus: displayStatuses(mqttClient, 'D105'),
     observation: observations
