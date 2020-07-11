@@ -8,7 +8,7 @@ import {
   FREYA_PIR_SENSORS,
   getRandomInt,
   jsonMessagesFrom,
-  motionControlledInterval,
+  motionControlledInterval, renderValueWithUnit,
   sendImageToDisplay
 } from './utils'
 import { getContext, renderRightAdjustedText } from '@chacal/canvas-render-utils'
@@ -117,17 +117,6 @@ export function renderData(waterTankLevel: number, houseBatteryVoltage: number, 
   renderCellularSignalStrength(ctx, connStatus, signalStrength, networkType, secondColumnX, secondRowValueY)
 
   return ctx.getImageData(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
-}
-
-function renderValueWithUnit(ctx: CanvasRenderingContext2D, value: string, unit: string, x: number, y: number) {
-  const valueFont = '42px RobotoCondensed700'
-  const unitFont = '20px Roboto400'
-
-  ctx.font = valueFont
-  let meas = ctx.measureText(value)
-  ctx.fillText(value, x, y)
-  ctx.font = unitFont
-  ctx.fillText(unit, x + meas.width + 2, y)
 }
 
 function renderCellularSignalStrength(ctx: CanvasRenderingContext2D, connStatus: number, signalStrength: number, networkType: number, x: number, y: number) {

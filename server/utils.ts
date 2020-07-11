@@ -116,3 +116,15 @@ export function cellularNetworkStr(networkType: number) {
       return '3G'
   }
 }
+
+export function renderValueWithUnit(ctx: CanvasRenderingContext2D, value: string, unit: string, x: number, y: number,
+                                    valueFontSize: number = 42, unitFontSize: number = 20) {
+  const valueFont = `${valueFontSize}px RobotoCondensed700`
+  const unitFont = `${unitFontSize}px Roboto400`
+
+  ctx.font = valueFont
+  let meas = ctx.measureText(value)
+  ctx.fillText(value, x, y)
+  ctx.font = unitFont
+  ctx.fillText(unit, x + meas.width + 2, y)
+}
