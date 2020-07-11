@@ -5,7 +5,7 @@ import R from 'ramda'
 import { readFileSync, writeFileSync } from 'fs'
 
 const POSITION_PERIOD_MS = 10000
-const CACHE_TIME_MS = 8 * 60 * 60 * 1000  // 8 hours
+const CACHE_TIME_MS = 16 * 60 * 60 * 1000  // 16 hours
 const CACHE_SAVE_PERIOD_MS = 30000
 
 const WebSocket = require('ws')
