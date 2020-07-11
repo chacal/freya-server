@@ -1,18 +1,22 @@
 import proj4 from 'proj4'
-import { getContext, renderCenteredText, renderRightAdjustedText, saveToPngFile } from '@chacal/canvas-render-utils'
+import { getContext, renderRightAdjustedText } from '@chacal/canvas-render-utils'
+import { CanvasRenderingContext2D } from 'canvas'
 import { getRecentPositions, Position } from './RecentPositionCache'
 import {
   displayStatuses,
   FREYA_PIR_SENSORS,
   getRandomInt,
   motionControlledInterval,
-  Observation, renderValueWithUnit, secondsSince, sendBWRImageToDisplay,
+  Observation,
+  renderValueWithUnit,
+  secondsSince,
+  sendBWRImageToDisplay,
 } from './utils'
 import { Client } from 'mqtt'
 import { SensorEvents } from '@chacal/js-utils'
-import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import { combineTemplate, EventStream } from 'baconjs'
 import { ChronoUnit, LocalTime, nativeJs } from '@js-joda/core'
+import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 
 const proj = proj4('WGS84', 'EPSG:3857')
 
