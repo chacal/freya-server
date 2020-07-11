@@ -5,11 +5,12 @@ import { Coap, Mqtt } from '@chacal/js-utils'
 import { parse } from 'url'
 import { ChronoUnit, LocalDateTime, nativeJs } from '@js-joda/core'
 import { SensorEvents as SE } from '@chacal/js-utils/built/ISensorEvent'
-import { EventStream, interval } from 'baconjs'
-import { MqttClient } from 'mqtt'
+import { EventStream, fromPromise, interval, once } from 'baconjs'
+import { Client, MqttClient } from 'mqtt'
 
 const SIGNALK_POSITION_ENDPOINT = 'http://freya-raspi.chacal.fi/signalk/v1/api/vessels/self/navigation/position'
 export const FREYA_PIR_SENSORS = ['P311', 'P312']
+const OBSERVATION_UPDATE_INTERVAL_MS = 60000
 
 interface Position {
   lat: number
@@ -95,6 +96,22 @@ export function jsonMessagesFrom(mqttClient: MqttClient): EventStream<object> {
       }
     })
     .filter(e => e !== null)
+}
+
+export function displayStatuses(mqttClient: Client, displayId: string) {
+  const sensorEvents = jsonMessagesFrom(mqttClient) as EventStream<SE.ISensorEvent>
+  return sensorEvents.filter(e => SE.isThreadDisplayStatus(e) && e.instance === displayId) as EventStream<SE.IThreadDisplayStatus>
+}
+
+export function nearestObservations() {
+  return positions()
+    .flatMapLatest(p => fromPromise(getNearestObservation(p)))
+}
+
+function positions() {
+  return once('')
+    .concat(interval(OBSERVATION_UPDATE_INTERVAL_MS, ''))
+    .flatMapLatest(() => fromPromise(fetchLocationFromSignalK()))
 }
 
 export function getRandomInt(max: number) {

@@ -1,15 +1,14 @@
 import mqtt = require('mqtt')
 import Client = mqtt.Client
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
-import { SensorEvents, SensorEvents as SE } from '@chacal/js-utils'
+import { SensorEvents } from '@chacal/js-utils'
 import { ChronoUnit, LocalTime, nativeJs } from '@js-joda/core'
-import { combineTemplate, EventStream, fromPromise, interval, once } from 'baconjs'
+import { combineTemplate, EventStream } from 'baconjs'
 import { getContext, renderCenteredText, renderRightAdjustedText } from '@chacal/canvas-render-utils'
 import {
-  fetchLocationFromSignalK,
+  displayStatuses,
   FREYA_PIR_SENSORS,
-  getNearestObservation, getRandomInt,
-  jsonMessagesFrom,
+  getRandomInt,
   motionControlledInterval,
   Observation,
   secondsSince,
@@ -17,11 +16,9 @@ import {
 } from './utils'
 import { MqttClient } from 'mqtt'
 
-export const D105_ADDRESS = 'fdcc:28cc:6dba:0000:ff0d:e379:e425:2c81'
 export const D106_ADDRESS = 'fdcc:28cc:6dba:0000:cab2:5899:6be9:59c2'
 const RENDERING_INTERVAL_MS = () => 5 * 60000 + getRandomInt(30000)
 const ACTIVE_TIME_WITHOUT_MOTION_MS = 12 * 60 * 60 * 1000  // Suspend rendering if no motion is detected for 12h
-const OBSERVATION_UPDATE_INTERVAL_MS = 60000
 const OBSERVATION_AGE_WARNING_S = 1800 // 30 minutes
 const MAX_RENDERED_OBSERVATION_AGE_S = 7200 // 2 hours
 
@@ -31,15 +28,8 @@ const DISPLAY_WIDTH = 250
 const DISPLAY_HEIGHT = 122
 
 
-export default {
-  start
-}
-
-function start<E>(mqttClient: Client) {
+export default function start<E>(mqttClient: Client, observations: EventStream<Observation>) {
   mqttClient.subscribe('/sensor/+/+/state')
-  const observations = nearestObservations()
-
-  setupObservationRendering(mqttClient, 'D105', D105_ADDRESS, observations)
   setupObservationRendering(mqttClient, 'D106', D106_ADDRESS, observations)
 }
 
@@ -121,21 +111,4 @@ export function render(obs: Observation, ds: IThreadDisplayStatus) {
   // Return rendered image
   //
   return ctx.getImageData(0, 0, REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT)
-}
-
-
-function nearestObservations() {
-  return positions()
-    .flatMapLatest(p => fromPromise(getNearestObservation(p)))
-}
-
-function positions() {
-  return once('')
-    .concat(interval(OBSERVATION_UPDATE_INTERVAL_MS, ''))
-    .flatMapLatest(() => fromPromise(fetchLocationFromSignalK()))
-}
-
-function displayStatuses(mqttClient: Client, displayId: string) {
-  const sensorEvents = jsonMessagesFrom(mqttClient) as EventStream<SE.ISensorEvent>
-  return sensorEvents.filter(e => SE.isThreadDisplayStatus(e) && e.instance === displayId) as EventStream<SE.IThreadDisplayStatus>
 }
