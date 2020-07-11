@@ -13,7 +13,7 @@ const DISPLAY_ADDRESSES = [
   D106_ADDRESS
 ]
 
-const STATUS_POLLING_INTERVAL_MS = 10 * 60000
+const STATUS_POLLING_INTERVAL_MS = () => 10 * 60000 + getRandomInt(30000)
 
 
 export default {
@@ -22,7 +22,7 @@ export default {
 
 function start<E>(mqttClient: Client) {
   fromArray(DISPLAY_ADDRESSES)
-    .flatMap(addr => NetworkDisplay.statusesWithInterval(addr, STATUS_POLLING_INTERVAL_MS))
+    .flatMap(addr => NetworkDisplay.statusesWithInterval(addr, STATUS_POLLING_INTERVAL_MS()))
     .onValue(publishThreadDisplayStatus)
 
   function publishThreadDisplayStatus(status: SE.IThreadDisplayStatus) {
