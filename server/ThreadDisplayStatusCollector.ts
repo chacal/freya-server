@@ -4,6 +4,7 @@ import { SensorEvents as SE, NetworkDisplay } from '@chacal/js-utils'
 import { fromArray } from 'baconjs'
 import { D102_ADDRESS } from './D102'
 import { D103_ADDRESS } from './D103'
+import { D105_ADDRESS } from './D105'
 import { D106_ADDRESS } from './D106'
 
 const DISPLAY_ADDRESSES = [

@@ -6,6 +6,7 @@ import AlternatorFanController from './AlternatorFanController'
 import AutopilotController from './AutopilotController'
 import D102NetworkDisplay from './D102'
 import D103NetworkDisplay from './D103'
+import startD105 from './D105'
 import startD106 from './D106'
 import ThreadDisplayStatusCollector from './ThreadDisplayStatusCollector'
 import Huawei4GModemStatusPoller from './Huawei4GModemStatusPoller'
@@ -34,6 +35,7 @@ startModule(AlternatorFanController.start)
 startModule(AutopilotController.start)
 startModule(D102NetworkDisplay.start)
 startModule(D103NetworkDisplay.start)
+startModule(client => startD105(client, observations))
 startModule(client => startD106(client, observations))
 startModule(ThreadDisplayStatusCollector.start)
 startModule(Huawei4GModemStatusPoller.start)

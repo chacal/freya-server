@@ -12,7 +12,7 @@ const WebSocket = require('ws')
 let positionCache: Position[] = []
 
 
-interface Position {
+export interface Position {
   ts: Date,
   lat: number,
   lng: number
