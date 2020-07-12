@@ -58,9 +58,9 @@ function render(obs: Observation, displayStatus: IThreadDisplayStatus) {
 function renderObservation(ctx: CanvasRenderingContext2D, obs: Observation, displayStatus: IThreadDisplayStatus) {
   const observationAgeSeconds = secondsSince(obs.ts)
   const startX = DISPLAY_WIDTH / 2
-  const valueFontSize = 46
+  const valueFontSize = 54
   const unitFontSize = 16
-  ctx.font = '16px Roboto500'
+  ctx.font = '20px RobotoCondensed500'
 
 
   //
@@ -82,7 +82,7 @@ function renderObservation(ctx: CanvasRenderingContext2D, obs: Observation, disp
   const windStr = observationAgeSeconds < MAX_RENDERED_OBSERVATION_AGE_S ? `${Math.round(obs.windSpeedMs)}` : '-'
   const gustStr = observationAgeSeconds < MAX_RENDERED_OBSERVATION_AGE_S ? `${Math.round(obs.windGustMs)}` : '-'
   let txt = `${windStr}/${gustStr}`
-  rowY = 60
+  rowY = 64
   renderValueWithUnit(ctx, txt, 'm/s', startX, rowY, valueFontSize, unitFontSize)
 
 
@@ -90,7 +90,7 @@ function renderObservation(ctx: CanvasRenderingContext2D, obs: Observation, disp
   // Render wind dir
   //
   txt = observationAgeSeconds < MAX_RENDERED_OBSERVATION_AGE_S ? `${obs.windDir}` : '-'
-  rowY = 103
+  rowY = 108
   renderValueWithUnit(ctx, txt, '°T', startX, rowY, valueFontSize, unitFontSize)
 
 
@@ -101,13 +101,13 @@ function renderObservation(ctx: CanvasRenderingContext2D, obs: Observation, disp
   const voltageStr = `${(displayStatus.vcc / 1000).toFixed(2)}V`
 
   ctx.font = '16px Roboto500'
-  ctx.fillText(timeStr, startX, DISPLAY_HEIGHT - 4)
-  renderRightAdjustedText(ctx, voltageStr, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 4)
+  ctx.fillText(timeStr, startX, DISPLAY_HEIGHT - 2)
+  renderRightAdjustedText(ctx, voltageStr, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 2)
 }
 
 
 function renderRecentPositions(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = 'rgba(0,0,0,0.28)'
+  ctx.fillStyle = 'rgba(0,0,0,0.55)'
 
   const positions = getRecentPositions()
   if (positions.length > 0) {
