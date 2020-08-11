@@ -2,7 +2,6 @@ import { MqttClient } from 'mqtt'
 import { Mqtt } from '@chacal/js-utils'
 import NmeaStreamer from './NmeaStreamer'
 import BatteryEnergyCalculator from './BatteryEnergyCalculator'
-import AlternatorFanController from './AlternatorFanController'
 import AutopilotController from './AutopilotController'
 import D102NetworkDisplay from './D102'
 import D103NetworkDisplay from './D103'
@@ -24,7 +23,6 @@ const MQTT_PASSWORD = process.env.MQTT_PASSWORD
 NmeaStreamer.start(NMEA_DEVICE_1, NMEA_DEVICE_2, NMEA_LOG_DIR)
 
 startModule(BatteryEnergyCalculator.start)
-startModule(AlternatorFanController.start)
 startModule(AutopilotController.start)
 startModule(D102NetworkDisplay.start)
 startModule(D103NetworkDisplay.start)
