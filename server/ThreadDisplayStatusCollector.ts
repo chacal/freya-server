@@ -26,6 +26,9 @@ function start<E>(mqttClient: Client) {
     .onValue(publishThreadDisplayStatus)
 
   function publishThreadDisplayStatus(status: SE.IThreadDisplayStatus) {
-    mqttClient.publish(`/sensor/${status.instance}/${status.tag}/state`, JSON.stringify(status))
+    mqttClient.publish(`/sensor/${status.instance}/${status.tag}/state`, JSON.stringify(status), {
+      retain: true,
+      qos: 1
+    })
   }
 }
