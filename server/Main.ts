@@ -1,6 +1,5 @@
 import { MqttClient } from 'mqtt'
 import { Mqtt } from '@chacal/js-utils'
-import NmeaStreamer from './NmeaStreamer'
 import BatteryEnergyCalculator from './BatteryEnergyCalculator'
 import AutopilotController from './AutopilotController'
 import D102NetworkDisplay from './D102'
@@ -11,16 +10,10 @@ import Huawei4GModemStatusPoller from './Huawei4GModemStatusPoller'
 
 import '@js-joda/timezone'
 
-const NMEA_DEVICE_1 = process.env.NMEA_DEVICE_1 || ''
-const NMEA_DEVICE_2 = process.env.NMEA_DEVICE_2 || ''
-const NMEA_LOG_DIR = process.env.NMEA_LOG_DIR
-
 const MQTT_BROKER = process.env.MQTT_BROKER || 'mqtts://sensor-backend.chacal.fi'
 const MQTT_USERNAME = process.env.MQTT_USERNAME
 const MQTT_PASSWORD = process.env.MQTT_PASSWORD
 
-
-NmeaStreamer.start(NMEA_DEVICE_1, NMEA_DEVICE_2, NMEA_LOG_DIR)
 
 startModule(BatteryEnergyCalculator.start)
 startModule(AutopilotController.start)

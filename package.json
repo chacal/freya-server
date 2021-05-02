@@ -23,10 +23,7 @@
     "mqtt": "^3.0.0",
     "node-fetch": "^2.6.0",
     "ramda": "^0.27.0",
-    "serialport": "^8.0.7",
     "typescript": "^3.8.3",
-    "winston": "^3.2.1",
-    "winston-daily-rotate-file": "^4.4.2",
     "xml2js": "^0.4.23"
   },
   "optionalDependencies": {
