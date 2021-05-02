@@ -63,7 +63,7 @@ class AutopilotController<E> {
       .toProperty(undefined)
 
     this.status = Bacon.combineWith((autopilotEnabled: boolean, course: number) => ({
-      tag: 'b',
+      tag: 'b' as 'b',
       instance: INSTANCE,
       ts: new Date().toISOString(),
       enabled: autopilotEnabled,
