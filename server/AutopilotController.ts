@@ -10,7 +10,7 @@ import { SensorEvents as SE } from '@chacal/js-utils'
 
 const PGN_65360_FILTER = { id: 0xff5000, mask: 0x1ffff00 }    // Tracked course (magnetic)
 const TRACKED_COURSE_PGN = 65360
-const INSTANCE = '10'
+const INSTANCE = 'A100'
 
 export default {
   start
@@ -18,7 +18,7 @@ export default {
 
 function start<E>(mqttClient: Client) {
   const autopilot = new AutopilotController()
-  const autopilotCommands = subscribeEvents(mqttClient, [`/command/${INSTANCE}/a/state`]) as EventStream<SE.IAutopilotCommand>
+  const autopilotCommands = subscribeEvents(mqttClient, [`/sensor/${INSTANCE}/a/state`]) as EventStream<SE.IAutopilotCommand>
 
   autopilotCommands.filter(e => e.buttonId === 1).onValue(() => autopilot.turnOn())
   autopilotCommands.filter(e => e.buttonId === 2).onValue(() => autopilot.turnOff())
