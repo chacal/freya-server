@@ -12,6 +12,7 @@ import {
   sendImageToDisplay
 } from './utils'
 import { getContext, renderRightAdjustedText } from '@chacal/canvas-render-utils'
+import { CanvasRenderingContext2D } from 'canvas'
 
 const DISPLAY_SELF_INSTANCE = 'D102'
 const DISPLAY_WIDTH = 296
@@ -107,19 +108,24 @@ export function renderData(waterTankLevel: number, houseBatteryVoltage: number, 
   renderValueWithUnit(ctx, `${houseBatteryCapacity.toFixed(0)}`, 'Ah', secondColumnX, firstRowValueY)
   renderValueWithUnit(ctx, `${waterTankLevel}`, '%', firstColumnX, secondRowValueY)
 
-  const statusFont = '14px Roboto500'
-  const thirdColumnMarginRight = 6
-  ctx.font = statusFont
-  renderRightAdjustedText(ctx, LocalTime.now().truncatedTo(ChronoUnit.MINUTES).toString(), DISPLAY_WIDTH - thirdColumnMarginRight, 16)
-  renderRightAdjustedText(ctx, `${rssi} dBm`, DISPLAY_WIDTH - thirdColumnMarginRight, 68)
-  renderRightAdjustedText(ctx, `${(vcc / 1000).toFixed(3)}V`, DISPLAY_WIDTH - thirdColumnMarginRight, 120)
+  renderDisplayStatus(ctx, rssi, vcc)
 
   renderCellularSignalStrength(ctx, connStatus, signalStrength, networkType, secondColumnX, secondRowValueY)
 
   return ctx.getImageData(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
 }
 
-function renderValueWithUnit(ctx: CanvasRenderingContext2D, value: string, unit: string, x: number, y: number) {
+export function renderDisplayStatus(ctx: CanvasRenderingContext2D, rssi: number, vcc: number) {
+  const statusFont = '14px Roboto500'
+  const thirdColumnMarginRight = 6
+  ctx.font = statusFont
+  renderRightAdjustedText(ctx, LocalTime.now().truncatedTo(ChronoUnit.MINUTES).toString(), DISPLAY_WIDTH - thirdColumnMarginRight, 16)
+  renderRightAdjustedText(ctx, `${rssi} dBm`, DISPLAY_WIDTH - thirdColumnMarginRight, 68)
+  renderRightAdjustedText(ctx, `${(vcc / 1000).toFixed(3)}V`, DISPLAY_WIDTH - thirdColumnMarginRight, 120)
+}
+
+
+export function renderValueWithUnit(ctx: CanvasRenderingContext2D, value: string, unit: string, x: number, y: number) {
   const valueFont = '42px RobotoCondensed700'
   const unitFont = '20px Roboto400'
 
@@ -127,7 +133,7 @@ function renderValueWithUnit(ctx: CanvasRenderingContext2D, value: string, unit:
   let meas = ctx.measureText(value)
   ctx.fillText(value, x, y)
   ctx.font = unitFont
-  ctx.fillText(unit, x + meas.width + 2, y)
+  ctx.fillText(unit, x + meas.width + 2, y - 15)
 }
 
 function renderCellularSignalStrength(ctx: CanvasRenderingContext2D, connStatus: number, signalStrength: number, networkType: number, x: number, y: number) {

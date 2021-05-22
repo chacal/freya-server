@@ -4,9 +4,19 @@ import { Coap, SensorEvents as SE } from '@chacal/js-utils'
 import { ChronoUnit, LocalTime } from '@js-joda/core'
 import { combineTemplate, EventStream, Property } from 'baconjs'
 import { parse } from 'url'
-import { FREYA_PIR_SENSORS, getRandomInt, jsonMessagesFrom, motionControlledInterval } from './utils'
+import {
+  FREYA_PIR_SENSORS,
+  getRandomInt,
+  jsonMessagesFrom,
+  motionControlledInterval,
+  sendImageToDisplay
+} from './utils'
+import { getContext, renderRightAdjustedText } from '@chacal/canvas-render-utils'
+import { renderDisplayStatus, renderValueWithUnit } from './D102'
 
 const DISPLAY_SELF_INSTANCE = 'D103'
+const DISPLAY_WIDTH = 296
+const DISPLAY_HEIGHT = 128
 const AFT_SENSOR_INSTANCE = 'S205'
 const SALOON_SENSOR_INSTANCE = 'S216'
 const OUTSIDE_SENSOR_INSTANCE = 'S219'
@@ -55,7 +65,7 @@ function environmentEvents(sensorEvents: EventStream<SE.ISensorEvent>, instance:
 function setupNetworkDisplay(combinedEvents: CombinedStream, samplingStream: EventStream<any>) {
   combinedEvents.first()
     .concat(combinedEvents.sampledBy(samplingStream))
-    .onValue(v => renderData(
+    .map(v => renderData(
       v.aftTemp.temperature,
       v.saloonTemp.temperature,
       v.outsideTemp.temperature,
@@ -63,25 +73,33 @@ function setupNetworkDisplay(combinedEvents: CombinedStream, samplingStream: Eve
       v.displayStatus.vcc,
       v.displayStatus.parent.latestRssi
     ))
+    .onValue(imageData => sendImageToDisplay(D103_ADDRESS, imageData))
 }
 
-function renderData(aftTemp: number, saloonTemp: number, outsideTemp: number, forwardTemp: number, vcc: number, rssi: number) {
-  const displayData = [
-    { c: 'c' },
-    { c: 's', i: 1, x: 15, y: 19, font: 12, msg: 'Aft Cabin' },
-    { c: 's', i: 2, x: 10, y: 56, font: 30, msg: `${aftTemp.toFixed(1)}` },
-    { c: 's', i: 3, x: 135, y: 19, font: 12, msg: 'Saloon' },
-    { c: 's', i: 4, x: 130, y: 56, font: 30, msg: `${saloonTemp.toFixed(1)}` },
-    { c: 's', i: 5, x: 15, y: 85, font: 12, msg: 'Fwd Cabin' },
-    { c: 's', i: 6, x: 10, y: 122, font: 30, msg: `${forwardTemp.toFixed(1)}` },
-    { c: 's', i: 7, x: 135, y: 85, font: 12, msg: 'Outdoor' },
-    { c: 's', i: 8, x: 130, y: 122, font: 30, msg: `${outsideTemp.toFixed(1)}` },
-    { c: 's', i: 9, x: 252, y: 19, font: 12, msg: LocalTime.now().truncatedTo(ChronoUnit.MINUTES) },
-    { c: 's', i: 10, x: 230, y: 71, font: 12, msg: `${rssi} dBm` },
-    { c: 's', i: 11, x: 241, y: 122, font: 12, msg: `${(vcc / 1000).toFixed(3)}V` }
-  ]
+export function renderData(aftTemp: number, saloonTemp: number, outsideTemp: number, forwardTemp: number, vcc: number, rssi: number) {
+  const ctx = getContext(DISPLAY_WIDTH, DISPLAY_HEIGHT)
 
-  const url = `coap://[${D103_ADDRESS}]/api/display`
-  console.log(`Sending ${JSON.stringify(displayData).length} bytes to ${url}`)
-  Coap.postJson(parse(url), displayData, false)
+  const labelFont = '16px Roboto500'
+  const firstRowLabelY = 18
+  const secondRowLabelY = 82
+  const firstColumnX = 10
+  const secondColumnX = 135
+
+  ctx.font = labelFont
+  ctx.fillText('Aft Cabin', firstColumnX, firstRowLabelY)
+  ctx.fillText('Saloon', secondColumnX, firstRowLabelY)
+  ctx.fillText('Fwd Cabin', firstColumnX, secondRowLabelY)
+  ctx.fillText('Outdoor', secondColumnX, secondRowLabelY)
+
+  const rowHeight = 37
+  const firstRowValueY = firstRowLabelY + rowHeight
+  const secondRowValueY = secondRowLabelY + rowHeight
+  renderValueWithUnit(ctx, `${aftTemp.toFixed(1)}`, '°C', firstColumnX, firstRowValueY)
+  renderValueWithUnit(ctx, `${saloonTemp.toFixed(1)}`, '°C', secondColumnX, firstRowValueY)
+  renderValueWithUnit(ctx, `${forwardTemp.toFixed(1)}`, '°C', firstColumnX, secondRowValueY)
+  renderValueWithUnit(ctx, `${outsideTemp.toFixed(1)}`, '°C', secondColumnX, secondRowValueY)
+
+  renderDisplayStatus(ctx, rssi, vcc)
+
+  return ctx.getImageData(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
 }
