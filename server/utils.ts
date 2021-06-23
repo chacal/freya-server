@@ -8,7 +8,8 @@ import { SensorEvents as SE } from '@chacal/js-utils/built/ISensorEvent'
 import { EventStream, interval } from 'baconjs'
 import { MqttClient } from 'mqtt'
 
-const SIGNALK_POSITION_ENDPOINT = 'http://freya-raspi.chacal.fi/signalk/v1/api/vessels/self/navigation/position'
+export const SIGNALK_BASE_URL = 'http://freya-raspi.chacal.fi'
+const SIGNALK_POSITION_ENDPOINT = SIGNALK_BASE_URL + '/signalk/v1/api/vessels/self/navigation/position'
 export const FREYA_PIR_SENSORS = ['P311', 'P312']
 
 interface Position {
